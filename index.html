@@ -174,7 +174,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Cream base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('cream')">+ Add</button>
     </div>
-    <div class="info-box">Cream base ingredient breakdown — for stock tracking only. COGS uses the <strong>Cream Base (CB)</strong> bulk line in the Batches/inventory tab priced per gram.</div>
+    <div class="info-box">Cream base ingredient breakdown. Enter grams produced below — each ingredient deducts proportionally by its % from stock. CB bulk stock in the inventory tab increases by the same amount.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -186,7 +186,11 @@ input:focus{border-color:var(--border2)}
         <tbody id="cream-tbody"></tbody>
       </table>
     </div>
-
+    <div class="section-sub">Cream base produced this month</div>
+    <div class="produced-row">
+      <input type="number" id="cream-produced" placeholder="e.g. 2000" style="width:180px" min="0" oninput="updateSummary()">
+      <span style="font-size:12px;color:var(--text2)">grams made — deducts ingredients &amp; adds to CB stock</span>
+    </div>
   </div>
 </div>
 
@@ -197,7 +201,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Foam base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('foam')">+ Add</button>
     </div>
-    <div class="info-box">Foam base ingredient breakdown — for stock tracking only. COGS uses the <strong>Foam Base (FB)</strong> bulk line in the Batches/inventory tab priced per gram.</div>
+    <div class="info-box">Foam base ingredient breakdown. Enter grams produced below — each ingredient deducts proportionally by its % from stock. FB bulk stock in the inventory tab increases by the same amount.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -209,7 +213,11 @@ input:focus{border-color:var(--border2)}
         <tbody id="foam-tbody"></tbody>
       </table>
     </div>
-
+    <div class="section-sub">Foam base produced this month</div>
+    <div class="produced-row">
+      <input type="number" id="foam-produced" placeholder="e.g. 1000" style="width:180px" min="0" oninput="updateSummary()">
+      <span style="font-size:12px;color:var(--text2)">grams made — deducts ingredients &amp; adds to FB stock</span>
+    </div>
   </div>
 </div>
 
@@ -587,6 +595,23 @@ function calcAll(){
     usageMap[code].cost+=cost;
   });
 
+  // base production this month
+  var creamProd=parseFloat(document.getElementById('cream-produced')?document.getElementById('cream-produced').value:0)||0;
+  var foamProd =parseFloat(document.getElementById('foam-produced')?document.getElementById('foam-produced').value:0)||0;
+
+  // cream ingredient deductions from production
+  var creamIngUsage={}; // code -> grams used
+  cream.forEach(function(ing){
+    var used=(ing.pct/100)*creamProd;
+    creamIngUsage[ing.code]={ing:ing,grams:used,cost:ing.bought>0?(ing.price/ing.bought)*used:0};
+  });
+  // foam ingredient deductions from production
+  var foamIngUsage={};
+  foam.forEach(function(ing){
+    var used=(ing.pct/100)*foamProd;
+    foamIngUsage[ing.code]={ing:ing,grams:used,cost:ing.bought>0?(ing.price/ing.bought)*used:0};
+  });
+
   // packaging
   var totalPkgCost=0;
   pkg.forEach(function(p){
@@ -599,6 +624,8 @@ function calcAll(){
     creamDed:creamDed,foamDed:foamDed,allDed:allDed,
     resolved:resolved,usageMap:usageMap,
     totalIngCost:totalIngCost,
+    creamProd:creamProd,foamProd:foamProd,
+    creamIngUsage:creamIngUsage,foamIngUsage:foamIngUsage,
     totalPkgCost:totalPkgCost,
     grandTotal:totalIngCost+totalPkgCost
   };
@@ -618,7 +645,7 @@ function updateSummary(){
   document.getElementById('s-ing').textContent=fmtINR(d.totalIngCost);
   document.getElementById('s-pkg').textContent=fmtINR(d.totalPkgCost);
   document.getElementById('s-total').textContent=fmtINR(d.grandTotal);
-  document.getElementById('s-per').textContent=d.totalRx>0?fmtINR(d.grandTotal/d.totalRx)+' per Rx':'—';
+  document.getElementById('s-per').textContent='';
 }
 
 // ── render tables ─────────────────────────────────────────────────
@@ -707,7 +734,7 @@ function generateReport(){
     '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+d.totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam(50ml)</div></div>'+
     '<div class="rmetric"><div class="rmetric-lbl">Ingredient cost</div><div class="rmetric-val">'+fmtINR(d.totalIngCost)+'</div><div class="rmetric-sub">APIs + EXC + bases (auto-calc)</div></div>'+
     '<div class="rmetric"><div class="rmetric-lbl">Packaging cost</div><div class="rmetric-val">'+fmtINR(d.totalPkgCost)+'</div><div class="rmetric-sub">all kits + wastage</div></div>'+
-    '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div><div class="rmetric-sub">'+(d.totalRx>0?fmtINR(d.grandTotal/d.totalRx):'-')+' per Rx</div></div>';
+    '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div></div>';
 
   document.getElementById('rcard-breakdown').style.display='block';
   document.getElementById('report-breakdown').innerHTML=
@@ -729,11 +756,33 @@ function generateReport(){
       '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
   }).join('');
 
+  // cream base ingredient rows
+  var creamIngRows=cream.map(function(a){
+    var usage=d.creamIngUsage[a.code];
+    var used=usage?usage.grams:0;
+    var rem=a.stock-used;
+    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-blue" style="font-size:10px">CB</span></td>'+
+      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
+      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
+  }).join('');
+  var foamIngRows=foam.map(function(a){
+    var usage=d.foamIngUsage[a.code];
+    var used=usage?usage.grams:0;
+    var rem=a.stock-used;
+    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-teal" style="font-size:10px">FB</span></td>'+
+      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
+      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
+  }).join('');
+
   document.getElementById('rcard-stock').style.display='block';
   document.getElementById('report-stock').innerHTML=
     '<thead><tr><th style="width:80px">Code</th><th style="width:70px">Type</th>'+
     '<th>Opening (g)</th><th>Used (g)</th><th>Remaining</th></tr></thead>'+
-    '<tbody>'+apiRows+'</tbody>';
+    '<tbody>'+
+    '<tr class="group-hdr"><td colspan="5">APIs &amp; Excipients &amp; Bases</td></tr>'+apiRows+
+    '<tr class="group-hdr"><td colspan="5">Cream base ingredients (from '+d.creamProd+'g produced)</td></tr>'+creamIngRows+
+    '<tr class="group-hdr"><td colspan="5">Foam base ingredients (from '+d.foamProd+'g produced)</td></tr>'+foamIngRows+
+    '</tbody>';
 
   var pkgRows=pkg.map(function(p){
     var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
@@ -824,16 +873,8 @@ function downloadSummaryPDF(){
     ['Cream base','Rs '+baseCostForCode(d,'CB').toFixed(2),pct(baseCostForCode(d,'CB'),d.grandTotal)+'%'],
     ['Foam base','Rs '+baseCostForCode(d,'FB').toFixed(2),pct(baseCostForCode(d,'FB'),d.grandTotal)+'%'],
     ['Packaging','Rs '+d.totalPkgCost.toFixed(2),pct(d.totalPkgCost,d.grandTotal)+'%'],
-    ['TOTAL COGS','Rs '+d.grandTotal.toFixed(2),'100%'],
-    ['Cost per prescription',d.totalRx>0?'Rs '+(d.grandTotal/d.totalRx).toFixed(2):'—','']
+    ['TOTAL COGS','Rs '+d.grandTotal.toFixed(2),'100%']
   ],[90,52,40]);
-
-  var pkgRows=pkg.map(function(p){
-    var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
-    var used=auto+(p.adj||0),rem=p.stock-used;
-    return[p.name,p.kit,String(p.stock),String(used),String(rem),rem<0?'DEFICIT':rem<p.stock*0.2&&p.stock>0?'Low':'OK'];
-  });
-  y=autoTable(doc,y,['Packaging item','Kit','Opening','Used','Remaining','Status'],pkgRows,[44,22,26,22,30,26]);
 
   pdfFooter(doc,1);
   doc.save('Formial_Summary_'+dateRange().replace(/ /g,'_')+'.pdf');
@@ -864,8 +905,28 @@ function downloadDetailPDF(){
       rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK',
       'Rs '+cost.toFixed(2)];
   });
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('All ingredients & bases',14,y);y+=4;
+  var creamIngRowsPDF=cream.map(function(a){
+    var usage=d.creamIngUsage[a.code];
+    var used=usage?usage.grams:0;
+    var rem=a.stock-used;
+    return[a.code,'CB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
+      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','—'];
+  });
+  var foamIngRowsPDF=foam.map(function(a){
+    var usage=d.foamIngUsage[a.code];
+    var used=usage?usage.grams:0;
+    var rem=a.stock-used;
+    return[a.code,'FB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
+      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','—'];
+  });
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('APIs, Excipients & Bases',14,y);y+=4;
   y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],ingRows,[26,22,28,28,26,22,30]);
+  if(y>220){doc.addPage();page++;pdfFooter(doc,page);y=22;}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Cream base ingredients ('+d.creamProd+'g produced)',14,y);y+=4;
+  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],creamIngRowsPDF,[26,22,28,28,26,22,30]);
+  if(y>220){doc.addPage();page++;pdfFooter(doc,page);y=22;}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Foam base ingredients ('+d.foamProd+'g produced)',14,y);y+=4;
+  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],foamIngRowsPDF,[26,22,28,28,26,22,30]);
 
   if(y>230){doc.addPage();page++;pdfFooter(doc,page);y=22;}
   var pkgRows2=pkg.map(function(p){
