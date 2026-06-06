@@ -125,7 +125,7 @@ input:focus{border-color:var(--border2)}
     <div class="info-box">
       <strong>Cream (20g/50g):</strong> APIs + auto excipients (BHT, SMBS, EDTA if Azelaic) + solvent (Transcutol-P, or Propylene Glycol if TCS) + Cream Base remainder.<br>
       <strong>Tretinoin stock sol:</strong> 0.1g Tret in 10ml Transcutol — both Tret and Transcutol deducted from stock sol usage, then Transcutol deducted again as solvent.<br>
-      <strong>Foam (60g):</strong> listed APIs only + Foam Base remainder. No extra excipients.
+      <strong>Foam (50ml):</strong> listed APIs only + Foam Base remainder. No extra excipients.
     </div>
     <div class="paste-grid">
       <div>
@@ -139,7 +139,7 @@ input:focus{border-color:var(--border2)}
         <div class="pg-note" id="count50">0 prescriptions</div>
       </div>
       <div>
-        <div class="paste-label"><span class="badge b-teal">Foam 60g</span> Foam prescriptions</div>
+        <div class="paste-label"><span class="badge b-teal">Foam 50ml</span> Foam prescriptions</div>
         <textarea id="rxfoam" placeholder="Minoxidil 5% + Spironolactone 2%&#10;Minoxidil 5%"></textarea>
         <div class="pg-note" id="countfoam">0 prescriptions</div>
       </div>
@@ -472,9 +472,9 @@ function calcCreamDeductions(apiList, batchSize){
   return deductions;
 }
 
-// Returns deduction map for a single foam prescription (60g)
+// Returns deduction map for a single foam prescription (50ml = 50g)
 function calcFoamDeductions(apiList){
-  var batchSize=60;
+  var batchSize=50;
   var deductions={};
   function add(key,grams){deductions[key]=(deductions[key]||0)+grams;}
 
@@ -556,7 +556,7 @@ function getIngCostPerG(ing){
 function calcAll(){
   var rxs20=parseRx(document.getElementById('rx20').value,20);
   var rxs50=parseRx(document.getElementById('rx50').value,50);
-  var rxsF =parseRx(document.getElementById('rxfoam').value,60); // foam = 60g
+  var rxsF =parseRx(document.getElementById('rxfoam').value,50); // foam = 50ml = 50g
   var n20=rxs20.length,n50=rxs50.length,nF=rxsF.length;
   var totalRx=n20+n50+nF;
 
@@ -704,7 +704,7 @@ function generateReport(){
   if(!document.getElementById('date-to').value)   document.getElementById('date-to').value=lastDay;
 
   document.getElementById('report-metrics').innerHTML=
-    '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+d.totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam(60g)</div></div>'+
+    '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+d.totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam(50ml)</div></div>'+
     '<div class="rmetric"><div class="rmetric-lbl">Ingredient cost</div><div class="rmetric-val">'+fmtINR(d.totalIngCost)+'</div><div class="rmetric-sub">APIs + EXC + bases (auto-calc)</div></div>'+
     '<div class="rmetric"><div class="rmetric-lbl">Packaging cost</div><div class="rmetric-val">'+fmtINR(d.totalPkgCost)+'</div><div class="rmetric-sub">all kits + wastage</div></div>'+
     '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div><div class="rmetric-sub">'+(d.totalRx>0?fmtINR(d.grandTotal/d.totalRx):'-')+' per Rx</div></div>';
@@ -715,7 +715,7 @@ function generateReport(){
     '<tr><td>APIs (prescription ingredients)</td><td>&#8377;'+apiOnlyCost(d).toFixed(2)+'</td><td>'+pct(apiOnlyCost(d),d.grandTotal)+'%</td></tr>'+
     '<tr><td>Excipients (auto BHT, SMBS, EDTA, TCP/PG)</td><td>&#8377;'+excCost(d).toFixed(2)+'</td><td>'+pct(excCost(d),d.grandTotal)+'%</td></tr>'+
     '<tr><td>Cream base (batch remainder)</td><td>&#8377;'+baseCostForCode(d,'CB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'CB'),d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Foam base (batch remainder)</td><td>&#8377;'+baseCostForCode(d,'FB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'FB'),d.grandTotal)+'%</td></tr>'+
+    '<tr><td>Foam base (50ml batch remainder)</td><td>&#8377;'+baseCostForCode(d,'FB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'FB'),d.grandTotal)+'%</td></tr>'+
     '<tr><td>Packaging</td><td>&#8377;'+d.totalPkgCost.toFixed(2)+'</td><td>'+pct(d.totalPkgCost,d.grandTotal)+'%</td></tr>'+
     '<tr class="report-total"><td>Total COGS</td><td>&#8377;'+d.grandTotal.toFixed(2)+'</td><td>100%</td></tr></tbody>';
 
@@ -815,7 +815,7 @@ function downloadSummaryPDF(){
   doc.text('Period: '+dateRange(),14,y+13);doc.setTextColor(26,26,26);y+=20;
 
   y=autoTable(doc,y,['Prescription type','Count'],[
-    ['20g cream',d.n20],['50g cream',d.n50],['Foam (60g)',d.nF],['Total',d.totalRx]
+    ['20g cream',d.n20],['50g cream',d.n50],['Foam (50ml)',d.nF],['Total',d.totalRx]
   ],[120,62]);
 
   y=autoTable(doc,y,['Cost category','Amount (Rs)','% of COGS'],[
@@ -852,7 +852,7 @@ function downloadDetailPDF(){
   // deduction notes
   doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(120,120,120);
   doc.text('Cream deductions: listed APIs + auto BHT/SMBS/EDTA(if Azelaic) + TCP stock-sol(Tret) + TCP or PG solvent + CB remainder',14,y);y+=5;
-  doc.text('Foam deductions: listed APIs only + FB remainder (60g per prescription)',14,y);y+=8;
+  doc.text('Foam deductions: listed APIs only + FB remainder (50ml = 50g per prescription)',14,y);y+=8;
   doc.setTextColor(26,26,26);doc.setFont('helvetica','normal');
 
   var ingRows=apis.map(function(a){
@@ -895,6 +895,14 @@ function downloadDetailPDF(){
   document.getElementById('date-to').value=new Date(today.getFullYear(),today.getMonth()+1,0).toISOString().slice(0,10);
 })();
 
+// ensure CB and FB always exist in apis
+(function(){
+  var hasCB = apis.some(function(a){return a.code==='CB'});
+  var hasFB = apis.some(function(a){return a.code==='FB'});
+  if(!hasCB) apis.push({name:'Cream Base',code:'CB',type:'BASE',stock:0,bought:0,price:0,restock:''});
+  if(!hasFB) apis.push({name:'Foam Base', code:'FB',type:'BASE',stock:0,bought:0,price:0,restock:''});
+  if(!hasCB||!hasFB) sv('apis',apis);
+})();
 renderApis();renderBase('cream');renderBase('foam');renderPkg();updateSummary();
 </script>
 </body>
