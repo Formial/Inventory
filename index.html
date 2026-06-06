@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formial Labs — COGS Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -107,8 +107,8 @@ input:focus{border-color:var(--border2)}
     <button class="nav-btn" onclick="showPage('cream',this)">Cream base</button>
     <button class="nav-btn" onclick="showPage('foam',this)">Foam base</button>
     <button class="nav-btn" onclick="showPage('packaging',this)">Packaging</button>
+    <button class="nav-btn" onclick="showPage('report',this);generateReport()" style="border:1px solid var(--border2);margin-left:8px">&#9656; Report</button>
   </nav>
-  <button class="nav-report" onclick="showPage('report',this);generateReport()">&#9656; Monthly report</button>
 </div>
 <div class="content">
 
@@ -174,7 +174,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Cream base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('cream')">+ Add</button>
     </div>
-    <div class="info-box">Cream base ingredients are for reference and cost calculation only. Bulk cream base stock is tracked in the Batches tab as a single line item <strong>Cream Base</strong>.</div>
+    <div class="info-box">Cream base ingredient breakdown — for stock tracking only. COGS uses the <strong>Cream Base (CB)</strong> bulk line in the Batches/inventory tab priced per gram.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -186,11 +186,7 @@ input:focus{border-color:var(--border2)}
         <tbody id="cream-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Cream base produced this month</div>
-    <div class="produced-row">
-      <input type="number" id="cream-produced" placeholder="Total grams" style="width:160px" min="0" oninput="updateSummary()">
-      <span style="font-size:12px;color:var(--text2)">grams of cream base made this month</span>
-    </div>
+
   </div>
 </div>
 
@@ -201,7 +197,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Foam base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('foam')">+ Add</button>
     </div>
-    <div class="info-box">Foam base ingredients are for reference and cost calculation only. Bulk foam base stock is tracked in the Batches tab as a single line item <strong>Foam Base</strong>.</div>
+    <div class="info-box">Foam base ingredient breakdown — for stock tracking only. COGS uses the <strong>Foam Base (FB)</strong> bulk line in the Batches/inventory tab priced per gram.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -213,11 +209,7 @@ input:focus{border-color:var(--border2)}
         <tbody id="foam-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Foam base produced this month</div>
-    <div class="produced-row">
-      <input type="number" id="foam-produced" placeholder="Total grams" style="width:160px" min="0" oninput="updateSummary()">
-      <span style="font-size:12px;color:var(--text2)">grams of foam base made this month</span>
-    </div>
+
   </div>
 </div>
 
@@ -595,13 +587,6 @@ function calcAll(){
     usageMap[code].cost+=cost;
   });
 
-  // base costs from base tabs (for reference cost calc)
-  var creamProd=parseFloat(document.getElementById('cream-produced').value)||0;
-  var foamProd =parseFloat(document.getElementById('foam-produced').value)||0;
-  var creamCpg=baseCpg(cream),foamCpg=baseCpg(foam);
-  var totalCreamBaseCost=creamProd*creamCpg;
-  var totalFoamBaseCost=foamProd*foamCpg;
-
   // packaging
   var totalPkgCost=0;
   pkg.forEach(function(p){
@@ -614,8 +599,6 @@ function calcAll(){
     creamDed:creamDed,foamDed:foamDed,allDed:allDed,
     resolved:resolved,usageMap:usageMap,
     totalIngCost:totalIngCost,
-    creamProd:creamProd,foamProd:foamProd,
-    totalCreamBaseCost:totalCreamBaseCost,totalFoamBaseCost:totalFoamBaseCost,
     totalPkgCost:totalPkgCost,
     grandTotal:totalIngCost+totalPkgCost
   };
