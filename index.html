@@ -739,10 +739,7 @@ function generateReport(){
   document.getElementById('rcard-breakdown').style.display='block';
   document.getElementById('report-breakdown').innerHTML=
     '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
-    '<tr><td>APIs (prescription ingredients)</td><td>&#8377;'+apiOnlyCost(d).toFixed(2)+'</td><td>'+pct(apiOnlyCost(d),d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Excipients (auto BHT, SMBS, EDTA, TCP/PG)</td><td>&#8377;'+excCost(d).toFixed(2)+'</td><td>'+pct(excCost(d),d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Cream base (batch remainder)</td><td>&#8377;'+baseCostForCode(d,'CB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'CB'),d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Foam base (50ml batch remainder)</td><td>&#8377;'+baseCostForCode(d,'FB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'FB'),d.grandTotal)+'%</td></tr>'+
+    '<tr><td>Ingredients (APIs + excipients + base)</td><td>&#8377;'+d.totalIngCost.toFixed(2)+'</td><td>'+pct(d.totalIngCost,d.grandTotal)+'%</td></tr>'+
     '<tr><td>Packaging</td><td>&#8377;'+d.totalPkgCost.toFixed(2)+'</td><td>'+pct(d.totalPkgCost,d.grandTotal)+'%</td></tr>'+
     '<tr class="report-total"><td>Total COGS</td><td>&#8377;'+d.grandTotal.toFixed(2)+'</td><td>100%</td></tr></tbody>';
 
@@ -868,13 +865,10 @@ function downloadSummaryPDF(){
   ],[120,62]);
 
   y=autoTable(doc,y,['Cost category','Amount (Rs)','% of COGS'],[
-    ['APIs (Rx ingredients)','Rs '+apiOnlyCost(d).toFixed(2),pct(apiOnlyCost(d),d.grandTotal)+'%'],
-    ['Excipients (BHT,SMBS,EDTA,TCP/PG)','Rs '+excCost(d).toFixed(2),pct(excCost(d),d.grandTotal)+'%'],
-    ['Cream base','Rs '+baseCostForCode(d,'CB').toFixed(2),pct(baseCostForCode(d,'CB'),d.grandTotal)+'%'],
-    ['Foam base','Rs '+baseCostForCode(d,'FB').toFixed(2),pct(baseCostForCode(d,'FB'),d.grandTotal)+'%'],
+    ['Ingredients (APIs + excipients + base)','Rs '+d.totalIngCost.toFixed(2),pct(d.totalIngCost,d.grandTotal)+'%'],
     ['Packaging','Rs '+d.totalPkgCost.toFixed(2),pct(d.totalPkgCost,d.grandTotal)+'%'],
     ['TOTAL COGS','Rs '+d.grandTotal.toFixed(2),'100%']
-  ],[90,52,40]);
+  ],[100,50,32]);
 
   pdfFooter(doc,1);
   doc.save('Formial_Summary_'+dateRange().replace(/ /g,'_')+'.pdf');
