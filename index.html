@@ -96,6 +96,7 @@ input:focus{border-color:var(--border2)}
 .rmetric-val{font-size:20px;font-weight:600;letter-spacing:-.02em}
 .rmetric-sub{font-size:10px;color:var(--text3);margin-top:4px}
 .rmetric-total{border-color:var(--border2);background:var(--bg2)}
+.info-box{background:var(--blue-bg);border:1px solid #c5ddf5;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--blue-text);margin-bottom:14px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -121,28 +122,36 @@ input:focus{border-color:var(--border2)}
   </div>
   <div class="card">
     <div class="card-title">Prescription formulas — paste one per line</div>
+    <div class="info-box">
+      <strong>Cream (20g/50g):</strong> APIs + auto excipients (BHT, SMBS, EDTA if Azelaic) + solvent (Transcutol-P, or Propylene Glycol if TCS) + Cream Base remainder.<br>
+      <strong>Tretinoin stock sol:</strong> 0.1g Tret in 10ml Transcutol — both Tret and Transcutol deducted from stock sol usage, then Transcutol deducted again as solvent.<br>
+      <strong>Foam (60g):</strong> listed APIs only + Foam Base remainder. No extra excipients.
+    </div>
     <div class="paste-grid">
       <div>
-        <div class="paste-label"><span class="badge b-blue">20 g</span> 20g prescriptions</div>
-        <textarea id="rx20" placeholder="Tretinoin 0.025% + Clindamycin 1% + Spironolactone 5%"></textarea>
+        <div class="paste-label"><span class="badge b-blue">20 g</span> 20g cream prescriptions</div>
+        <textarea id="rx20" placeholder="Tretinoin 0.025% + Clindamycin 1% + Spironolactone 5%&#10;Tretinoin 0.020% + Niacinamide 4% + Azelaic Acid 4%"></textarea>
         <div class="pg-note" id="count20">0 prescriptions</div>
       </div>
       <div>
-        <div class="paste-label"><span class="badge b-amber">50 g</span> 50g prescriptions</div>
-        <textarea id="rx50" placeholder="Azelaic Acid 10% + Niacinamide 4%"></textarea>
+        <div class="paste-label"><span class="badge b-amber">50 g</span> 50g cream prescriptions</div>
+        <textarea id="rx50" placeholder="Azelaic Acid 10% + Niacinamide 4%&#10;Tretinoin 0.015% + Kojic Acid 2%"></textarea>
         <div class="pg-note" id="count50">0 prescriptions</div>
       </div>
       <div>
-        <div class="paste-label"><span class="badge b-teal">Foam</span> Foam prescriptions</div>
-        <textarea id="rxfoam" placeholder="Minoxidil 5% + Spironolactone 2%"></textarea>
+        <div class="paste-label"><span class="badge b-teal">Foam 60g</span> Foam prescriptions</div>
+        <textarea id="rxfoam" placeholder="Minoxidil 5% + Spironolactone 2%&#10;Minoxidil 5%"></textarea>
         <div class="pg-note" id="countfoam">0 prescriptions</div>
       </div>
     </div>
   </div>
   <div class="card">
     <div class="row-actions">
-      <div class="card-title" style="margin:0">API &amp; excipient inventory</div>
+      <div class="card-title" style="margin:0">API, excipient &amp; base inventory</div>
       <button class="btn btn-sm" onclick="addApiRow()">+ Add</button>
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      Stock column = current quantity on hand. Bought + Price = last purchase batch for &#8377;/g calculation. <strong>Cream Base</strong> and <strong>Foam Base</strong> are tracked here as single bulk stock items — deducted automatically per batch.
     </div>
     <div class="tbl-wrap">
       <table>
@@ -165,6 +174,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Cream base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('cream')">+ Add</button>
     </div>
+    <div class="info-box">Cream base ingredients are for reference and cost calculation only. Bulk cream base stock is tracked in the Batches tab as a single line item <strong>Cream Base</strong>.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -176,7 +186,7 @@ input:focus{border-color:var(--border2)}
         <tbody id="cream-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Base produced this month</div>
+    <div class="section-sub">Cream base produced this month</div>
     <div class="produced-row">
       <input type="number" id="cream-produced" placeholder="Total grams" style="width:160px" min="0" oninput="updateSummary()">
       <span style="font-size:12px;color:var(--text2)">grams of cream base made this month</span>
@@ -191,6 +201,7 @@ input:focus{border-color:var(--border2)}
       <div class="card-title" style="margin:0">Foam base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('foam')">+ Add</button>
     </div>
+    <div class="info-box">Foam base ingredients are for reference and cost calculation only. Bulk foam base stock is tracked in the Batches tab as a single line item <strong>Foam Base</strong>.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -202,7 +213,7 @@ input:focus{border-color:var(--border2)}
         <tbody id="foam-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Base produced this month</div>
+    <div class="section-sub">Foam base produced this month</div>
     <div class="produced-row">
       <input type="number" id="foam-produced" placeholder="Total grams" style="width:160px" min="0" oninput="updateSummary()">
       <span style="font-size:12px;color:var(--text2)">grams of foam base made this month</span>
@@ -235,10 +246,8 @@ input:focus{border-color:var(--border2)}
   <div class="report-header">
     <div class="card-title">Monthly report</div>
     <div class="date-row">
-      <label>From</label>
-      <input type="date" id="date-from">
-      <label>To</label>
-      <input type="date" id="date-to">
+      <label>From</label><input type="date" id="date-from">
+      <label>To</label><input type="date" id="date-to">
       <button class="btn btn-primary btn-sm" onclick="generateReport()" style="padding:6px 14px">Refresh</button>
     </div>
     <div class="pdf-btn-row">
@@ -261,110 +270,131 @@ input:focus{border-color:var(--border2)}
   </div>
 </div>
 
-</div><!-- /content -->
+</div>
 
 <script>
+// ── storage ───────────────────────────────────────────────────────
 function sv(k,v){try{localStorage.setItem('fml_cogs_'+k,JSON.stringify(v))}catch(e){}}
 function lv(k,d){try{var v=localStorage.getItem('fml_cogs_'+k);return v!=null?JSON.parse(v):d}catch(e){return d}}
 
+// ── constants ─────────────────────────────────────────────────────
+var TRET_CONC = 0.1;   // 0.1g tret per 10ml transcutol = 0.01g/ml
+var EXC_PCT   = 0.1;   // each excipient = 0.1%
+
+// ── defaults ──────────────────────────────────────────────────────
 var DEF_APIS=[
-  {name:'Tretinoin',code:'TRE',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Azelaic Acid',code:'AZA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Niacinamide',code:'NIA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Spironolactone',code:'SPIRO',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Clindamycin',code:'CLIN',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Minoxidil',code:'MINO',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Tranexamic Acid',code:'TXA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Kojic Acid',code:'KOJ',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Hydroquinone',code:'HQ',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Hyaluronic Acid',code:'HA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Adapalene',code:'ADA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Benzoyl Peroxide',code:'BPO',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Hydrocortisone',code:'HC',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Alpha Arbutin',code:'AA',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Ivermectin',code:'IVM',type:'API',stock:0,bought:0,price:0,restock:''},
-  {name:'Metronidazole',code:'MTZ',type:'API',stock:0,bought:0,price:0,restock:''},
+  // APIs
+  {name:'Tretinoin',        code:'TRE',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Azelaic Acid',     code:'AZA',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Niacinamide',      code:'NIA',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Spironolactone',   code:'SPIRO',type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Clindamycin',      code:'CLIN', type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Minoxidil',        code:'MINO', type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Tranexamic Acid',  code:'TXA',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Kojic Acid',       code:'KOJ',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Hydroquinone',     code:'HQ',   type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Hyaluronic Acid',  code:'HA',   type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Adapalene',        code:'ADA',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Benzoyl Peroxide', code:'BPO',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Hydrocortisone',   code:'HC',   type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Alpha Arbutin',    code:'AA',   type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Ivermectin',       code:'IVM',  type:'API', stock:0,bought:0,price:0,restock:''},
+  {name:'Metronidazole',    code:'MTZ',  type:'API', stock:0,bought:0,price:0,restock:''},
+  // Excipients
   {name:'Sodium Metabisulphite',code:'SMBS',type:'EXC',stock:0,bought:0,price:0,restock:''},
-  {name:'BHT',code:'BHT',type:'EXC',stock:0,bought:0,price:0,restock:''},
-  {name:'Disodium EDTA',code:'EDTA',type:'EXC',stock:0,bought:0,price:0,restock:''},
-  {name:'Transcutol-P',code:'TCP',type:'EXC',stock:0,bought:0,price:0,restock:''},
-  {name:'Propylene Glycol',code:'PG',type:'EXC',stock:0,bought:0,price:0,restock:''}
+  {name:'BHT',              code:'BHT',  type:'EXC', stock:0,bought:0,price:0,restock:''},
+  {name:'Disodium EDTA',    code:'EDTA', type:'EXC', stock:0,bought:0,price:0,restock:''},
+  {name:'Transcutol-P',     code:'TCP',  type:'EXC', stock:0,bought:0,price:0,restock:''},
+  {name:'Propylene Glycol', code:'PG',   type:'EXC', stock:0,bought:0,price:0,restock:''},
+  // Bases (bulk stock)
+  {name:'Cream Base',       code:'CB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
+  {name:'Foam Base',        code:'FB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
 ];
+
 var DEF_CREAM=[
-  {name:'DM Water',code:'DMW',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Glycerin',code:'GLY',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Hyaluronic Acid',code:'HA-C',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Carbopol',code:'CARB',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Triethanolamine',code:'TEA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Isopropyl Palmitate',code:'IPP',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Isopropyl Myristate',code:'IPM',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Olivem',code:'OLV',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Emulsifying Wax',code:'EWAX',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Beeswax',code:'BWX',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Dimethicone',code:'DMTC',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Cetiol',code:'CTL',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'PhenHEG',code:'PHG',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Vitamin E',code:'VTE',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Sorbic Acid',code:'SBA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Panthenol',code:'PANT',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Licorice Extract',code:'LIC',stock:0,bought:0,price:0,pct:0,restock:''}
+  {name:'DM Water',           code:'DMW', stock:0,bought:0,price:0,pct:82.2,restock:''},
+  {name:'Glycerin',           code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Hyaluronic Acid',    code:'HA-C',stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Carbopol',           code:'CARB',stock:0,bought:0,price:0,pct:1.3, restock:''},
+  {name:'Triethanolamine',    code:'TEA', stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'Isopropyl Palmitate',code:'IPP', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Isopropyl Myristate',code:'IPM', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Olivem',             code:'OLV', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Emulsifying Wax',    code:'EWAX',stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Beeswax',            code:'BWX', stock:0,bought:0,price:0,pct:0,   restock:''},
+  {name:'Dimethicone',        code:'DMTC',stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Cetiol',             code:'CTL', stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'PhenHEG',            code:'PHG', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Vitamin E',          code:'VTE', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Sorbic Acid',        code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
+  {name:'Panthenol',          code:'PANT',stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'Licorice Extract',   code:'LIC', stock:0,bought:0,price:0,pct:1,   restock:''},
 ];
+
 var DEF_FOAM=[
-  {name:'DM Water',code:'DMW',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Decyl Glucoside',code:'DG',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Glycerin',code:'GLY',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Propanediol',code:'PDO',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Sodium Lactate',code:'SLA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Lactic Acid',code:'LA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Pea Sprout Extract',code:'PSE',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Panthenol',code:'PANT',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Polyquaternium-10',code:'PQ10',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Polyquaternium-7',code:'PQ7',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Phenoxyethanol',code:'PHE',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Sodium Benzoate',code:'SBZ',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Denatured Ethanol',code:'ETH',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Zinc PCA',code:'ZPCA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Sodium Metabisulfite',code:'SMBS',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Disodium EDTA',code:'EDTA',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'BHT',code:'BHT',stock:0,bought:0,price:0,pct:0,restock:''},
-  {name:'Sorbic Acid',code:'SBA',stock:0,bought:0,price:0,pct:0,restock:''}
+  {name:'DM Water',           code:'DMW', stock:0,bought:0,price:0,pct:68.5,restock:''},
+  {name:'Decyl Glucoside',    code:'DG',  stock:0,bought:0,price:0,pct:4,   restock:''},
+  {name:'Glycerin',           code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Propanediol',        code:'PDO', stock:0,bought:0,price:0,pct:7,   restock:''},
+  {name:'Sodium Lactate',     code:'SLA', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Lactic Acid',        code:'LA',  stock:0,bought:0,price:0,pct:4,   restock:''},
+  {name:'Pea Sprout Extract', code:'PSE', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Panthenol',          code:'PANT',stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Polyquaternium-10',  code:'PQ10',stock:0,bought:0,price:0,pct:0.6, restock:''},
+  {name:'Polyquaternium-7',   code:'PQ7', stock:0,bought:0,price:0,pct:0.6, restock:''},
+  {name:'Phenoxyethanol',     code:'PHE', stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Sodium Benzoate',    code:'SBZ', stock:0,bought:0,price:0,pct:0.4, restock:''},
+  {name:'Denatured Ethanol',  code:'ETH', stock:0,bought:0,price:0,pct:10,  restock:''},
+  {name:'Zinc PCA',           code:'ZPCA',stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'Sodium Metabisulfite',code:'SMBS',stock:0,bought:0,price:0,pct:0.1,restock:''},
+  {name:'Disodium EDTA',      code:'EDTA',stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'BHT',                code:'BHT', stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'Sorbic Acid',        code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
 ];
+
 var DEF_PKG=[
-  {name:'15ml pump',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Flyer (small)',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Box (small)',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Sleeve',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Sticker',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''},
-  {name:'50ml pump',stock:0,price:0,kit:'50g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Flyer (big)',stock:0,price:0,kit:'50g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Box (big)',stock:0,price:0,kit:'50g',qtyPerKit:1,adj:0,restock:''},
-  {name:'Foam pump',stock:0,price:0,kit:'foam',qtyPerKit:1,adj:0,restock:''}
+  {name:'15ml pump',    stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Flyer (small)',stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Box (small)',  stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Sleeve',       stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Sticker',      stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
+  {name:'50ml pump',    stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Flyer (big)',  stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Box (big)',    stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
+  {name:'Foam pump',    stock:0,price:0,kit:'foam',qtyPerKit:1,adj:0,restock:''},
 ];
 
-var apis=lv('apis',DEF_APIS);
-var cream=lv('cream',DEF_CREAM);
-var foam=lv('foam',DEF_FOAM);
-var pkg=lv('pkg',DEF_PKG);
+var apis  = lv('apis',  DEF_APIS);
+var cream = lv('cream', DEF_CREAM);
+var foam  = lv('foam',  DEF_FOAM);
+var pkg   = lv('pkg',   DEF_PKG);
 
+// ── navigation ────────────────────────────────────────────────────
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.nav-btn,.nav-report').forEach(function(b){b.classList.remove('active')});
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
 }
+
+// ── helpers ───────────────────────────────────────────────────────
 function norm(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'')}
 function pgm(ing){return ing.bought>0?(ing.price/ing.bought).toFixed(3):'-'}
 function fmtINR(n){return '\u20B9'+Math.round(n).toLocaleString('en-IN')}
 function pct(v,t){return t>0?((v/t)*100).toFixed(1):'0.0'}
 function countLines(id){return(document.getElementById(id).value||'').split('\n').filter(function(l){return l.trim()}).length}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
 function stockTag(rem,opening){
   if(rem<0) return '<span class="tag-def">Deficit</span>';
   if(opening>0&&rem<opening*0.15) return '<span class="tag-low">Low</span>';
   return '<span class="tag-ok">OK</span>';
 }
 function typeBadge(t){
-  return t==='API'?'<span class="badge b-coral" style="font-size:10px">API</span>':'<span class="badge b-purple" style="font-size:10px">EXC</span>';
+  if(t==='API')  return '<span class="badge b-coral"  style="font-size:10px">API</span>';
+  if(t==='EXC')  return '<span class="badge b-purple" style="font-size:10px">EXC</span>';
+  if(t==='BASE') return '<span class="badge b-amber"  style="font-size:10px">BASE</span>';
+  return '';
 }
 function genCode(name,existing){
   var words=name.trim().split(/\s+/);
@@ -374,6 +404,241 @@ function genCode(name,existing){
   return final;
 }
 
+// ── find ingredient in apis by name (fuzzy) ───────────────────────
+function findApi(name){
+  var n=norm(name);
+  return apis.find(function(a){
+    return norm(a.name)===n||n.indexOf(norm(a.name))>=0||norm(a.name).indexOf(n)>=0;
+  })||null;
+}
+function findApiByCode(code){
+  return apis.find(function(a){return a.code===code})||null;
+}
+
+// ── batch deduction logic (matches formial_batches.html) ──────────
+function isTCS(apiList){
+  var names=apiList.map(function(i){return norm(i.name)});
+  return names.some(function(n){return n.includes('tretinoin')})
+      && names.some(function(n){return n.includes('clindamycin')})
+      && names.some(function(n){return n.includes('spironolactone')});
+}
+function hasAzelaic(apiList){
+  return apiList.some(function(i){return norm(i.name).includes('azelaic')});
+}
+function hasTretinoin(apiList){
+  return apiList.some(function(i){return norm(i.name).includes('tretinoin')});
+}
+
+// Returns a deduction map: {normName: grams} for a single cream prescription
+function calcCreamDeductions(apiList, batchSize){
+  var deductions={};
+  function add(key,grams){deductions[key]=(deductions[key]||0)+grams;}
+
+  var tcs=isTCS(apiList);
+  var hasAz=hasAzelaic(apiList);
+  var hasTret=hasTretinoin(apiList);
+
+  // Step 1: listed APIs
+  var nonTretApiGrams=0;
+  apiList.forEach(function(api){
+    var grams=(api.pct/100)*batchSize;
+    var isTret=norm(api.name).includes('tretinoin');
+    if(isTret){
+      // Tret: stock sol = grams needed ÷ TRET_CONC (g/ml) gives ml of stock sol
+      // stock sol has 0.1g tret per 10ml transcutol → 1ml sol = 0.01g tret + 1ml TCP
+      var mlStockSol = grams / (TRET_CONC/10); // grams / 0.01 = ml of stock sol
+      add('tretinoin', grams);                  // deduct actual tret grams
+      add('transcutolp', mlStockSol);           // deduct TCP used in stock sol (ml≈g)
+    } else {
+      add(norm(api.name), grams);
+      nonTretApiGrams+=grams;
+    }
+  });
+
+  // Step 2: auto excipients
+  add('bht',  (EXC_PCT/100)*batchSize);
+  add('sodiummeta', (EXC_PCT/100)*batchSize); // SMBS
+  if(hasAz){
+    add('edta', (EXC_PCT/100)*batchSize);
+  }
+
+  // Step 3: solvent = 50% of non-Tret API weight
+  var solventG = nonTretApiGrams * 0.5;
+  if(tcs){
+    add('propylenegly', solventG);
+  } else {
+    add('transcutolp', solventG); // adds to TCP already deducted above
+  }
+
+  // Step 4: cream base remainder
+  var usedPct = apiList.reduce(function(s,i){return s+i.pct},0)
+               + EXC_PCT*2 + (hasAz?EXC_PCT:0)
+               + (nonTretApiGrams*0.5/batchSize*100);
+  var basePct = Math.max(0, 100 - usedPct);
+  add('creambase', (basePct/100)*batchSize);
+
+  return deductions;
+}
+
+// Returns deduction map for a single foam prescription (60g)
+function calcFoamDeductions(apiList){
+  var batchSize=60;
+  var deductions={};
+  function add(key,grams){deductions[key]=(deductions[key]||0)+grams;}
+
+  var usedPct=0;
+  apiList.forEach(function(api){
+    var grams=(api.pct/100)*batchSize;
+    add(norm(api.name), grams);
+    usedPct+=api.pct;
+  });
+
+  // foam base remainder
+  var basePct=Math.max(0,100-usedPct);
+  add('foambase',(basePct/100)*batchSize);
+
+  return deductions;
+}
+
+// Merge deduction maps
+function mergeDeductions(maps){
+  var merged={};
+  maps.forEach(function(m){
+    Object.keys(m).forEach(function(k){
+      merged[k]=(merged[k]||0)+m[k];
+    });
+  });
+  return merged;
+}
+
+// Map deduction key → apis array entry
+// Keys used: norm of api name, 'tretinoin','transcutolp','bht','sodiummeta','edta',
+//            'propylenegly','creambase','foambase'
+function resolveDeductions(deductions){
+  var result=[];
+  var specialMap={
+    'tretinoin':    function(){return apis.find(function(a){return norm(a.name).includes('tretinoin')&&a.type==='API'})},
+    'transcutolp':  function(){return apis.find(function(a){return norm(a.name).includes('transcutol')})},
+    'bht':          function(){return apis.find(function(a){return norm(a.name)==='bht'||norm(a.name).includes('bht')})},
+    'sodiummeta':   function(){return apis.find(function(a){return norm(a.name).includes('metabisulph')||norm(a.name).includes('metabisulf')})},
+    'edta':         function(){return apis.find(function(a){return norm(a.name).includes('edta')})},
+    'propylenegly': function(){return apis.find(function(a){return norm(a.name).includes('propylene')})},
+    'creambase':    function(){return apis.find(function(a){return norm(a.name)==='creambase'||a.code==='CB'})},
+    'foambase':     function(){return apis.find(function(a){return norm(a.name)==='foambase'||a.code==='FB'})},
+  };
+  Object.keys(deductions).forEach(function(key){
+    var grams=deductions[key];
+    var ing=null;
+    if(specialMap[key]){
+      ing=specialMap[key]();
+    } else {
+      ing=apis.find(function(a){
+        var n=norm(a.name);
+        return n===key||key.indexOf(n)>=0||n.indexOf(key)>=0;
+      });
+    }
+    result.push({key:key,grams:grams,ing:ing});
+  });
+  return result;
+}
+
+// ── parse prescriptions ───────────────────────────────────────────
+function parseRx(text,size){
+  if(!text.trim()) return[];
+  return text.trim().split('\n').filter(function(l){return l.trim()}).map(function(line){
+    var apiList=line.split('+').map(function(s){
+      s=s.trim();
+      var m=s.match(/^(.+?)\s+([\d.]+)%/);
+      return m?{name:m[1].trim(),pct:parseFloat(m[2])}:null;
+    }).filter(Boolean);
+    return{raw:line.trim(),apiList:apiList,size:size};
+  });
+}
+
+// ── cost calculation ──────────────────────────────────────────────
+function getIngCostPerG(ing){
+  if(!ing||ing.bought<=0) return 0;
+  return ing.price/ing.bought;
+}
+
+function calcAll(){
+  var rxs20=parseRx(document.getElementById('rx20').value,20);
+  var rxs50=parseRx(document.getElementById('rx50').value,50);
+  var rxsF =parseRx(document.getElementById('rxfoam').value,60); // foam = 60g
+  var n20=rxs20.length,n50=rxs50.length,nF=rxsF.length;
+  var totalRx=n20+n50+nF;
+
+  // collect all deduction maps
+  var creamMaps=[];
+  rxs20.concat(rxs50).forEach(function(rx){
+    creamMaps.push(calcCreamDeductions(rx.apiList,rx.size));
+  });
+  var foamMaps=[];
+  rxsF.forEach(function(rx){
+    foamMaps.push(calcFoamDeductions(rx.apiList));
+  });
+
+  var creamDed=mergeDeductions(creamMaps);
+  var foamDed=mergeDeductions(foamMaps);
+  var allDed=mergeDeductions([creamDed,foamDed]);
+
+  // resolve to ingredients and calculate cost
+  var resolved=resolveDeductions(allDed);
+  var totalIngCost=0;
+  var usageMap={}; // code → {grams,cost}
+  resolved.forEach(function(r){
+    var cost=r.ing?getIngCostPerG(r.ing)*r.grams:0;
+    totalIngCost+=cost;
+    var code=r.ing?r.ing.code:r.key;
+    if(!usageMap[code]) usageMap[code]={grams:0,cost:0,ing:r.ing};
+    usageMap[code].grams+=r.grams;
+    usageMap[code].cost+=cost;
+  });
+
+  // base costs from base tabs (for reference cost calc)
+  var creamProd=parseFloat(document.getElementById('cream-produced').value)||0;
+  var foamProd =parseFloat(document.getElementById('foam-produced').value)||0;
+  var creamCpg=baseCpg(cream),foamCpg=baseCpg(foam);
+  var totalCreamBaseCost=creamProd*creamCpg;
+  var totalFoamBaseCost=foamProd*foamCpg;
+
+  // packaging
+  var totalPkgCost=0;
+  pkg.forEach(function(p){
+    var auto=p.kit==='20g'?n20:p.kit==='50g'?n50:nF;
+    totalPkgCost+=(auto+(p.adj||0))*p.price;
+  });
+
+  return{
+    rxs20:rxs20,rxs50:rxs50,rxsF:rxsF,n20:n20,n50:n50,nF:nF,totalRx:totalRx,
+    creamDed:creamDed,foamDed:foamDed,allDed:allDed,
+    resolved:resolved,usageMap:usageMap,
+    totalIngCost:totalIngCost,
+    creamProd:creamProd,foamProd:foamProd,
+    totalCreamBaseCost:totalCreamBaseCost,totalFoamBaseCost:totalFoamBaseCost,
+    totalPkgCost:totalPkgCost,
+    grandTotal:totalIngCost+totalPkgCost
+  };
+}
+
+function baseCpg(arr){
+  return arr.reduce(function(s,ing){
+    return s+(ing.bought>0?(ing.pct/100)*(ing.price/ing.bought):0);
+  },0);
+}
+
+// ── live summary ──────────────────────────────────────────────────
+function updateSummary(){
+  var d=calcAll();
+  document.getElementById('s-rx').textContent=d.totalRx;
+  document.getElementById('s-rx-sub').textContent=d.n20+'\u00d720g \u00b7 '+d.n50+'\u00d750g \u00b7 '+d.nF+'\u00d7foam';
+  document.getElementById('s-ing').textContent=fmtINR(d.totalIngCost);
+  document.getElementById('s-pkg').textContent=fmtINR(d.totalPkgCost);
+  document.getElementById('s-total').textContent=fmtINR(d.grandTotal);
+  document.getElementById('s-per').textContent=d.totalRx>0?fmtINR(d.grandTotal/d.totalRx)+' per Rx':'—';
+}
+
+// ── render tables ─────────────────────────────────────────────────
 function renderApis(){
   document.getElementById('api-tbody').innerHTML=apis.map(function(a,i){return(
     '<tr>'+
@@ -434,114 +699,99 @@ function delRow(type,i){
   else if(type==='foam'){foam.splice(i,1);sv('foam',foam);renderBase('foam');}
   else if(type==='pkg'){pkg.splice(i,1);sv('pkg',pkg);renderPkg();}
 }
-function addApiRow(){apis.push({name:'New ingredient',code:genCode('NI',apis.map(function(a){return a.code})),type:'API',stock:0,bought:0,price:0,restock:''});sv('apis',apis);renderApis();}
-function addBaseRow(type){var arr=type==='cream'?cream:foam;arr.push({name:'New ingredient',code:genCode('NI',arr.map(function(a){return a.code})),stock:0,bought:0,price:0,pct:0,restock:''});sv(type,arr);renderBase(type);}
+function addApiRow(){
+  apis.push({name:'New ingredient',code:genCode('NI',apis.map(function(a){return a.code})),type:'API',stock:0,bought:0,price:0,restock:''});
+  sv('apis',apis);renderApis();
+}
+function addBaseRow(type){
+  var arr=type==='cream'?cream:foam;
+  arr.push({name:'New ingredient',code:genCode('NI',arr.map(function(a){return a.code})),stock:0,bought:0,price:0,pct:0,restock:''});
+  sv(type,arr);renderBase(type);
+}
 function addPkgRow(){pkg.push({name:'New item',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''});sv('pkg',pkg);renderPkg();}
 
-function parseRx(text,size){
-  if(!text.trim()) return[];
-  return text.trim().split('\n').filter(function(l){return l.trim()}).map(function(line){
-    var apiList=line.split('+').map(function(s){s=s.trim();var m=s.match(/^(.+?)\s+([\d.]+)%/);return m?{name:m[1].trim(),pct:parseFloat(m[2])}:null}).filter(Boolean);
-    return{raw:line.trim(),apiList:apiList,size:size};
-  });
-}
-function getApiMatch(name){
-  var n=norm(name);
-  return apis.find(function(a){return norm(a.name)===n||n.indexOf(norm(a.name))>=0||norm(a.name).indexOf(n)>=0})||null;
-}
-function baseCpg(arr){
-  return arr.reduce(function(s,ing){return s+(ing.bought>0?(ing.pct/100)*(ing.price/ing.bought):0)},0);
-}
-
-function calcAll(){
-  var rxs20=parseRx(document.getElementById('rx20').value,20);
-  var rxs50=parseRx(document.getElementById('rx50').value,50);
-  var rxsF=parseRx(document.getElementById('rxfoam').value,20);
-  var allRx=rxs20.concat(rxs50).concat(rxsF);
-  var n20=rxs20.length,n50=rxs50.length,nF=rxsF.length;
-  var apiUsage={};var totalApiCost=0;
-  allRx.forEach(function(rx){
-    rx.apiList.forEach(function(api){
-      var gUsed=(api.pct/100)*rx.size;
-      var hit=getApiMatch(api.name);
-      var cost=hit&&hit.bought>0?gUsed*(hit.price/hit.bought):0;
-      totalApiCost+=cost;
-      var k=norm(api.name);
-      if(!apiUsage[k]) apiUsage[k]={name:api.name,code:hit?hit.code:'?',gUsed:0,cost:0};
-      apiUsage[k].gUsed+=gUsed;apiUsage[k].cost+=cost;
-    });
-  });
-  var creamProd=parseFloat(document.getElementById('cream-produced').value)||0;
-  var foamProd=parseFloat(document.getElementById('foam-produced').value)||0;
-  var creamCpg=baseCpg(cream),foamCpg=baseCpg(foam);
-  var totalCreamCost=creamProd*creamCpg,totalFoamCost=foamProd*foamCpg;
-  var totalIngCost=totalApiCost+totalCreamCost+totalFoamCost;
-  var totalPkgCost=0;
-  pkg.forEach(function(p){var auto=p.kit==='20g'?n20:p.kit==='50g'?n50:nF;totalPkgCost+=(auto+(p.adj||0))*p.price;});
-  return{rxs20:rxs20,rxs50:rxs50,rxsF:rxsF,allRx:allRx,n20:n20,n50:n50,nF:nF,
-    apiUsage:apiUsage,totalApiCost:totalApiCost,
-    creamProd:creamProd,foamProd:foamProd,creamCpg:creamCpg,foamCpg:foamCpg,
-    totalCreamCost:totalCreamCost,totalFoamCost:totalFoamCost,totalIngCost:totalIngCost,
-    totalPkgCost:totalPkgCost,grandTotal:totalIngCost+totalPkgCost};
-}
-
-function updateSummary(){
-  var d=calcAll();var totalRx=d.allRx.length;
-  document.getElementById('s-rx').textContent=totalRx;
-  document.getElementById('s-rx-sub').textContent=d.n20+'\u00d720g \u00b7 '+d.n50+'\u00d750g \u00b7 '+d.nF+'\u00d7foam';
-  document.getElementById('s-ing').textContent=fmtINR(d.totalIngCost);
-  document.getElementById('s-pkg').textContent=fmtINR(d.totalPkgCost);
-  document.getElementById('s-total').textContent=fmtINR(d.grandTotal);
-  document.getElementById('s-per').textContent=totalRx>0?fmtINR(d.grandTotal/totalRx)+' per prescription':'—';
-}
-
+// ── report ────────────────────────────────────────────────────────
 function generateReport(){
-  var d=calcAll();var totalRx=d.allRx.length;
+  var d=calcAll();
+
   var today=new Date();
   var firstDay=new Date(today.getFullYear(),today.getMonth(),1).toISOString().slice(0,10);
   var lastDay=new Date(today.getFullYear(),today.getMonth()+1,0).toISOString().slice(0,10);
   if(!document.getElementById('date-from').value) document.getElementById('date-from').value=firstDay;
-  if(!document.getElementById('date-to').value) document.getElementById('date-to').value=lastDay;
+  if(!document.getElementById('date-to').value)   document.getElementById('date-to').value=lastDay;
 
   document.getElementById('report-metrics').innerHTML=
-    '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam</div></div>'+
-    '<div class="rmetric"><div class="rmetric-lbl">Ingredient cost</div><div class="rmetric-val">'+fmtINR(d.totalIngCost)+'</div><div class="rmetric-sub">APIs + excipients + bases</div></div>'+
+    '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+d.totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam(60g)</div></div>'+
+    '<div class="rmetric"><div class="rmetric-lbl">Ingredient cost</div><div class="rmetric-val">'+fmtINR(d.totalIngCost)+'</div><div class="rmetric-sub">APIs + EXC + bases (auto-calc)</div></div>'+
     '<div class="rmetric"><div class="rmetric-lbl">Packaging cost</div><div class="rmetric-val">'+fmtINR(d.totalPkgCost)+'</div><div class="rmetric-sub">all kits + wastage</div></div>'+
-    '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div><div class="rmetric-sub">'+(totalRx>0?fmtINR(d.grandTotal/totalRx):'-')+' per Rx</div></div>';
+    '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div><div class="rmetric-sub">'+(d.totalRx>0?fmtINR(d.grandTotal/d.totalRx):'-')+' per Rx</div></div>';
 
   document.getElementById('rcard-breakdown').style.display='block';
   document.getElementById('report-breakdown').innerHTML=
     '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
-    '<tr><td>APIs &amp; excipients</td><td>&#8377;'+d.totalApiCost.toFixed(2)+'</td><td>'+pct(d.totalApiCost,d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Cream base ('+d.creamProd+'g produced)</td><td>&#8377;'+d.totalCreamCost.toFixed(2)+'</td><td>'+pct(d.totalCreamCost,d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Foam base ('+d.foamProd+'g produced)</td><td>&#8377;'+d.totalFoamCost.toFixed(2)+'</td><td>'+pct(d.totalFoamCost,d.grandTotal)+'%</td></tr>'+
+    '<tr><td>APIs (prescription ingredients)</td><td>&#8377;'+apiOnlyCost(d).toFixed(2)+'</td><td>'+pct(apiOnlyCost(d),d.grandTotal)+'%</td></tr>'+
+    '<tr><td>Excipients (auto BHT, SMBS, EDTA, TCP/PG)</td><td>&#8377;'+excCost(d).toFixed(2)+'</td><td>'+pct(excCost(d),d.grandTotal)+'%</td></tr>'+
+    '<tr><td>Cream base (batch remainder)</td><td>&#8377;'+baseCostForCode(d,'CB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'CB'),d.grandTotal)+'%</td></tr>'+
+    '<tr><td>Foam base (batch remainder)</td><td>&#8377;'+baseCostForCode(d,'FB').toFixed(2)+'</td><td>'+pct(baseCostForCode(d,'FB'),d.grandTotal)+'%</td></tr>'+
     '<tr><td>Packaging</td><td>&#8377;'+d.totalPkgCost.toFixed(2)+'</td><td>'+pct(d.totalPkgCost,d.grandTotal)+'%</td></tr>'+
     '<tr class="report-total"><td>Total COGS</td><td>&#8377;'+d.grandTotal.toFixed(2)+'</td><td>100%</td></tr></tbody>';
 
-  var apiRows=apis.map(function(a){var k=norm(a.name),used=d.apiUsage[k]?d.apiUsage[k].gUsed:0,rem=a.stock-used;
-    return '<tr><td><span class="code-pill">'+a.code+'</span></td><td>'+typeBadge(a.type)+'</td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';}).join('');
-  var creamRows=cream.map(function(a){var used=(a.pct/100)*d.creamProd,rem=a.stock-used;
-    return '<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-blue" style="font-size:10px">Cream</span></td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';}).join('');
-  var foamRows=foam.map(function(a){var used=(a.pct/100)*d.foamProd,rem=a.stock-used;
-    return '<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-teal" style="font-size:10px">Foam</span></td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';}).join('');
+  // stock table — codes only
+  var apiRows=apis.map(function(a){
+    var usage=d.usageMap[a.code];
+    var used=usage?usage.grams:0;
+    var rem=a.stock-used;
+    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td>'+typeBadge(a.type)+'</td>'+
+      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
+      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
+  }).join('');
+
   document.getElementById('rcard-stock').style.display='block';
   document.getElementById('report-stock').innerHTML=
-    '<thead><tr><th style="width:80px">Code</th><th style="width:70px">Type</th><th>Opening (g)</th><th>Used (g)</th><th>Remaining</th></tr></thead><tbody>'+
-    '<tr class="group-hdr"><td colspan="5">APIs &amp; Excipients</td></tr>'+apiRows+
-    '<tr class="group-hdr"><td colspan="5">Cream base ingredients</td></tr>'+creamRows+
-    '<tr class="group-hdr"><td colspan="5">Foam base ingredients</td></tr>'+foamRows+'</tbody>';
+    '<thead><tr><th style="width:80px">Code</th><th style="width:70px">Type</th>'+
+    '<th>Opening (g)</th><th>Used (g)</th><th>Remaining</th></tr></thead>'+
+    '<tbody>'+apiRows+'</tbody>';
 
-  var pkgRows=pkg.map(function(p){var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF,used=auto+(p.adj||0),rem=p.stock-used;
-    return '<tr><td>'+esc(p.name)+'</td><td><span class="badge '+(p.kit==='20g'?'b-blue':p.kit==='50g'?'b-amber':'b-teal')+'">'+p.kit+'</span></td><td>'+p.stock+'</td><td>'+auto+'+'+( p.adj||0)+' waste</td><td style="font-weight:600">'+rem+' '+stockTag(rem,p.stock)+'</td></tr>';}).join('');
+  var pkgRows=pkg.map(function(p){
+    var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
+    var used=auto+(p.adj||0),rem=p.stock-used;
+    return'<tr><td>'+esc(p.name)+'</td>'+
+      '<td><span class="badge '+(p.kit==='20g'?'b-blue':p.kit==='50g'?'b-amber':'b-teal')+'">'+p.kit+'</span></td>'+
+      '<td>'+p.stock+'</td><td>'+auto+'+'+( p.adj||0)+' waste</td>'+
+      '<td style="font-weight:600">'+rem+' '+stockTag(rem,p.stock)+'</td></tr>';
+  }).join('');
   document.getElementById('rcard-pkg').style.display='block';
   document.getElementById('report-pkg').innerHTML=
-    '<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Used+waste</th><th>Remaining</th></tr></thead><tbody>'+pkgRows+'</tbody>';
+    '<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Used+waste</th><th>Remaining</th></tr></thead>'+
+    '<tbody>'+pkgRows+'</tbody>';
 }
 
+// cost breakdown helpers
+function apiOnlyCost(d){
+  var c=0;
+  Object.keys(d.usageMap).forEach(function(code){
+    var u=d.usageMap[code];
+    if(u.ing&&u.ing.type==='API') c+=u.cost;
+  });
+  return c;
+}
+function excCost(d){
+  var c=0;
+  Object.keys(d.usageMap).forEach(function(code){
+    var u=d.usageMap[code];
+    if(u.ing&&u.ing.type==='EXC') c+=u.cost;
+  });
+  return c;
+}
+function baseCostForCode(d,code){
+  var u=d.usageMap[code];
+  return u?u.cost:0;
+}
+
+// ── PDF helpers ───────────────────────────────────────────────────
 function dateRange(){
   return(document.getElementById('date-from').value||'—')+' to '+(document.getElementById('date-to').value||'—');
 }
-
 function pdfHeader(doc,title){
   doc.setFillColor(26,26,26);doc.rect(0,0,210,18,'F');
   doc.setTextColor(255,255,255);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Formial Labs',14,11);
@@ -575,30 +825,32 @@ function autoTable(doc,y,headers,rows,colWidths){
 function downloadSummaryPDF(){
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:'mm',format:'a4'});
-  var d=calcAll();var totalRx=d.allRx.length;
+  var d=calcAll();
   var y=pdfHeader(doc,'Summary Report \u2014 '+dateRange());
   doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('COGS Summary',14,y+7);
   doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
   doc.text('Period: '+dateRange(),14,y+13);doc.setTextColor(26,26,26);y+=20;
 
-  y=autoTable(doc,y,['Prescription count',''],
-    [['Total',totalRx],['20g',d.n20],['50g',d.n50],['Foam',d.nF]],[120,62]);
+  y=autoTable(doc,y,['Prescription type','Count'],[
+    ['20g cream',d.n20],['50g cream',d.n50],['Foam (60g)',d.nF],['Total',d.totalRx]
+  ],[120,62]);
 
   y=autoTable(doc,y,['Cost category','Amount (Rs)','% of COGS'],[
-    ['APIs & excipients','Rs '+d.totalApiCost.toFixed(2),pct(d.totalApiCost,d.grandTotal)+'%'],
-    ['Cream base ('+d.creamProd+'g)','Rs '+d.totalCreamCost.toFixed(2),pct(d.totalCreamCost,d.grandTotal)+'%'],
-    ['Foam base ('+d.foamProd+'g)','Rs '+d.totalFoamCost.toFixed(2),pct(d.totalFoamCost,d.grandTotal)+'%'],
+    ['APIs (Rx ingredients)','Rs '+apiOnlyCost(d).toFixed(2),pct(apiOnlyCost(d),d.grandTotal)+'%'],
+    ['Excipients (BHT,SMBS,EDTA,TCP/PG)','Rs '+excCost(d).toFixed(2),pct(excCost(d),d.grandTotal)+'%'],
+    ['Cream base','Rs '+baseCostForCode(d,'CB').toFixed(2),pct(baseCostForCode(d,'CB'),d.grandTotal)+'%'],
+    ['Foam base','Rs '+baseCostForCode(d,'FB').toFixed(2),pct(baseCostForCode(d,'FB'),d.grandTotal)+'%'],
     ['Packaging','Rs '+d.totalPkgCost.toFixed(2),pct(d.totalPkgCost,d.grandTotal)+'%'],
     ['TOTAL COGS','Rs '+d.grandTotal.toFixed(2),'100%'],
-    ['Cost per prescription',totalRx>0?'Rs '+(d.grandTotal/totalRx).toFixed(2):'—','']
-  ],[90,50,42]);
+    ['Cost per prescription',d.totalRx>0?'Rs '+(d.grandTotal/d.totalRx).toFixed(2):'—','']
+  ],[90,52,40]);
 
   var pkgRows=pkg.map(function(p){
     var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
     var used=auto+(p.adj||0),rem=p.stock-used;
     return[p.name,p.kit,String(p.stock),String(used),String(rem),rem<0?'DEFICIT':rem<p.stock*0.2&&p.stock>0?'Low':'OK'];
   });
-  y=autoTable(doc,y,['Packaging item','Kit','Opening','Used','Remaining','Status'],pkgRows,[44,22,26,22,28,28]);
+  y=autoTable(doc,y,['Packaging item','Kit','Opening','Used','Remaining','Status'],pkgRows,[44,22,26,22,30,26]);
 
   pdfFooter(doc,1);
   doc.save('Formial_Summary_'+dateRange().replace(/ /g,'_')+'.pdf');
@@ -614,31 +866,38 @@ function downloadDetailPDF(){
   doc.text('Period: '+dateRange()+'   |   Codes only \u2014 confidential',14,y+13);
   doc.setTextColor(26,26,26);y+=20;
 
-  var apiRows=apis.map(function(a){
-    var k=norm(a.name),used=d.apiUsage[k]?d.apiUsage[k].gUsed:0,rem=a.stock-used;
-    var cost=d.apiUsage[k]?d.apiUsage[k].cost:0;
+  // deduction notes
+  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(120,120,120);
+  doc.text('Cream deductions: listed APIs + auto BHT/SMBS/EDTA(if Azelaic) + TCP stock-sol(Tret) + TCP or PG solvent + CB remainder',14,y);y+=5;
+  doc.text('Foam deductions: listed APIs only + FB remainder (60g per prescription)',14,y);y+=8;
+  doc.setTextColor(26,26,26);doc.setFont('helvetica','normal');
+
+  var ingRows=apis.map(function(a){
+    var usage=d.usageMap[a.code];
+    var used=usage?usage.grams:0;
+    var cost=usage?usage.cost:0;
+    var rem=a.stock-used;
     return[a.code,a.type,a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
-      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','Rs '+cost.toFixed(2)];
+      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK',
+      'Rs '+cost.toFixed(2)];
   });
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('APIs & Excipients',14,y);y+=4;
-  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],apiRows,[26,20,28,28,28,22,30]);
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('All ingredients & bases',14,y);y+=4;
+  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],ingRows,[26,22,28,28,26,22,30]);
 
   if(y>230){doc.addPage();page++;pdfFooter(doc,page);y=22;}
-  var creamRows=cream.map(function(a){var used=(a.pct/100)*d.creamProd,rem=a.stock-used;
-    return[a.code,a.pct+'%',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK'];});
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Cream base ingredients',14,y);y+=4;
-  y=autoTable(doc,y,['Code','% in base','Opening g','Used g','Remaining','Status'],creamRows,[28,24,32,30,32,28]);
-
-  if(y>230){doc.addPage();page++;pdfFooter(doc,page);y=22;}
-  var foamRows=foam.map(function(a){var used=(a.pct/100)*d.foamProd,rem=a.stock-used;
-    return[a.code,a.pct+'%',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK'];});
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Foam base ingredients',14,y);y+=4;
-  y=autoTable(doc,y,['Code','% in base','Opening g','Used g','Remaining','Status'],foamRows,[28,24,32,30,32,28]);
+  var pkgRows2=pkg.map(function(p){
+    var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
+    var used=auto+(p.adj||0),rem=p.stock-used;
+    return[p.name,p.kit,String(p.stock),String(used),String(rem),rem<0?'DEFICIT':rem<p.stock*0.2&&p.stock>0?'Low':'OK'];
+  });
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Packaging',14,y);y+=4;
+  y=autoTable(doc,y,['Item','Kit','Opening','Used','Remaining','Status'],pkgRows2,[44,22,28,22,32,24]);
 
   pdfFooter(doc,page);
   doc.save('Formial_Detail_'+dateRange().replace(/ /g,'_')+'.pdf');
 }
 
+// ── prescription counters ─────────────────────────────────────────
 ['rx20','rx50','rxfoam'].forEach(function(id){
   document.getElementById(id).addEventListener('input',function(){
     var key=id.replace('rx','');
