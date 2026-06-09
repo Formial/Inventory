@@ -3,962 +3,707 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formial Labs — COGS Dashboard</title>
+<title>Formial Labs — COGS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0efe9;
-  --text:#1a1a1a;--text2:#666;--text3:#999;
-  --border:#e0dfd8;--border2:#cccbc4;
-  --blue-bg:#e8f2fb;--blue-text:#0a3d6b;
-  --amber-bg:#fdf0d8;--amber-text:#5a3a08;
-  --teal-bg:#e0f4ec;--teal-text:#064a30;
-  --coral-bg:#faeae6;--coral-text:#6b2510;
-  --purple-bg:#eeedfe;--purple-text:#322080;
-  --green-bg:#e8f3dc;--green-text:#1e4a08;
+  --navy:#054660;--sky:#BFE6FF;
+  --bg:#fff;--bg2:#f0f7fc;--bg3:#e8f4fb;
+  --text:#1a1a1a;--muted:#5a8a9f;
+  --border:#BFE6FF;--border2:#054660;
   --red-bg:#fce8e8;--red-text:#6e1010;
+  --green-bg:#e8f3dc;--green-text:#1e4a08;
   --warn-bg:#fdf0d8;--warn-text:#5a3a08;
-  --radius:8px;--radius-lg:12px;
-  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --r:8px;--rl:12px;--sh:0 1px 4px rgba(5,70,96,.08);
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg3);min-height:100vh}
-.header{background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;height:52px;position:sticky;top:0;z-index:100}
-.logo{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-.logo span{color:var(--text2);font-weight:400}
-.nav{display:flex;gap:2px;margin-left:4px}
-.nav-btn{padding:6px 13px;font-size:13px;border:none;border-radius:var(--radius);cursor:pointer;background:transparent;color:var(--text2);font-family:inherit;transition:all .15s;white-space:nowrap}
-.nav-btn:hover{background:var(--bg2);color:var(--text)}
-.nav-btn.active{background:var(--text);color:#fff}
-.nav-report{margin-left:auto;padding:6px 14px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:transparent;color:var(--text);font-family:inherit;white-space:nowrap}
-.nav-report:hover{background:var(--bg2)}
-.nav-report.active{background:var(--text);color:#fff;border-color:var(--text)}
-.content{max-width:1140px;margin:0 auto;padding:24px 16px}
+body{font-family:'Inter',Arial,sans-serif;font-size:13px;color:var(--text);background:var(--bg3);min-height:100vh}
+.hdr{background:var(--navy);border-bottom:2px solid var(--sky);padding:0 20px;display:flex;align-items:center;gap:10px;height:54px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:9px;min-width:170px}
+.logo img{height:28px;filter:brightness(10)}
+.logo span{color:var(--sky);font-size:12px;font-weight:600;letter-spacing:.02em}
+nav{display:flex;gap:3px}
+.nb{padding:6px 13px;font-size:12px;border:none;border-radius:var(--r);cursor:pointer;background:transparent;color:rgba(191,230,255,.75);font-family:inherit;transition:all .15s;white-space:nowrap;font-weight:500}
+.nb:hover{background:rgba(255,255,255,.12);color:#fff}
+.nb.active{background:#fff;color:var(--navy);font-weight:700}
+.nb-rpt{margin-left:8px;background:rgba(255,255,255,.15);color:#fff}
+.nb-rpt.active{background:#fff;color:var(--navy)}
+.wrap{max-width:1160px;margin:0 auto;padding:20px 14px}
 .page{display:none}.page.active{display:block}
-.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.scard{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:var(--shadow)}
-.scard-lbl{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.scard-val{font-size:24px;font-weight:600;letter-spacing:-.02em}
-.scard-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.scard-total{border-color:var(--border2);background:var(--bg2)}
-.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
-.card-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
-.paste-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-@media(max-width:700px){.paste-grid{grid-template-columns:1fr}.summary-bar{grid-template-columns:1fr 1fr}}
-.paste-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-textarea{width:100%;height:160px;padding:10px 12px;font-size:12px;font-family:'SF Mono',Menlo,monospace;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);resize:vertical;line-height:1.65;outline:none;transition:border .15s}
-textarea:focus{border-color:var(--border2)}
-.pg-note{font-size:11px;color:var(--text3);margin-top:5px}
-.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--radius);font-weight:500}
-.b-blue{background:var(--blue-bg);color:var(--blue-text)}
-.b-amber{background:var(--amber-bg);color:var(--amber-text)}
-.b-teal{background:var(--teal-bg);color:var(--teal-text)}
-.b-coral{background:var(--coral-bg);color:var(--coral-text)}
-.b-purple{background:var(--purple-bg);color:var(--purple-text)}
-.code-pill{display:inline-block;font-size:10px;font-family:'SF Mono',Menlo,monospace;padding:2px 7px;border-radius:var(--radius);background:var(--bg3);color:var(--text2);font-weight:600;letter-spacing:.03em}
-.tbl-wrap{overflow-x:auto}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+.ct{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.info{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 13px;font-size:12px;color:var(--navy);margin-bottom:12px;line-height:1.65}
+.info strong{font-weight:700}
+.tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-th{text-align:left;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding:7px 8px;border-bottom:1px solid var(--border)}
-td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+th{text-align:left;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;padding:7px 8px;border-bottom:2px solid var(--border);background:var(--bg2)}
+td{padding:6px 8px;border-bottom:1px solid #e4f1fa;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg2)}
-.group-hdr td{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);background:var(--bg3);padding:5px 8px;border-bottom:1px solid var(--border)}
-input[type=number],input[type=text],input[type=date]{padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:inherit;width:100%;outline:none;transition:border .15s}
-input:focus{border-color:var(--border2)}
-.btn{padding:7px 16px;font-size:13px;border-radius:var(--radius);cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg);color:var(--text);transition:all .15s}
+tr:hover td{background:#f5fbff}
+tr:nth-child(even) td{background:#f7fbff}
+tr:nth-child(even):hover td{background:#ecf6fd}
+.ghdr td{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);background:var(--sky);padding:5px 8px}
+input[type=number],input[type=text],input[type=date],select{padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);font-family:inherit;width:100%;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--navy)}
+textarea{width:100%;height:145px;padding:9px 11px;font-size:12px;font-family:'SF Mono',Menlo,monospace;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical;line-height:1.65;outline:none;transition:border .15s}
+textarea:focus{border-color:var(--navy)}
+.btn{padding:6px 14px;font-size:12px;border-radius:var(--r);cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg);color:var(--navy);transition:all .15s;font-weight:500}
 .btn:hover{background:var(--bg2)}
-.btn-primary{background:var(--text);color:#fff;border-color:var(--text)}
-.btn-primary:hover{opacity:.88}
-.btn-sm{padding:4px 10px;font-size:12px}
-.btn-danger{border:none;background:transparent;color:var(--text3);padding:3px 7px;cursor:pointer;border-radius:var(--radius);font-size:13px}
-.btn-danger:hover{background:var(--red-bg);color:var(--red-text)}
-.row-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.tag-ok{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--radius);background:var(--green-bg);color:var(--green-text)}
-.tag-low{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--radius);background:var(--warn-bg);color:var(--warn-text)}
-.tag-def{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--radius);background:var(--red-bg);color:var(--red-text)}
-.section-sub{font-size:12px;font-weight:500;color:var(--text2);margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--border)}
-.produced-row{display:flex;align-items:center;gap:10px}
-.report-total td{font-weight:600;background:var(--bg2);border-top:1px solid var(--border2)}
-.pgm-lbl{font-size:11px;color:var(--text3)}
-.report-header{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
-.date-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.date-row label{font-size:12px;font-weight:500;color:var(--text2)}
-.date-row input[type=date]{width:150px}
-.pdf-btn-row{display:flex;gap:10px;flex-wrap:wrap}
-.pdf-btn{display:flex;align-items:center;gap:8px;padding:9px 18px;font-size:13px;border-radius:var(--radius);cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg);color:var(--text);transition:all .15s;font-weight:500}
-.pdf-btn:hover{background:var(--bg2)}
-.pdf-btn-primary{background:var(--text);color:#fff;border-color:var(--text)}
-.pdf-btn-primary:hover{opacity:.88}
-.report-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-@media(max-width:700px){.report-metrics{grid-template-columns:1fr 1fr}}
-.rmetric{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;text-align:center;box-shadow:var(--shadow)}
-.rmetric-lbl{font-size:11px;color:var(--text2);margin-bottom:5px}
-.rmetric-val{font-size:20px;font-weight:600;letter-spacing:-.02em}
-.rmetric-sub{font-size:10px;color:var(--text3);margin-top:4px}
-.rmetric-total{border-color:var(--border2);background:var(--bg2)}
-.info-box{background:var(--blue-bg);border:1px solid #c5ddf5;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--blue-text);margin-bottom:14px;line-height:1.6}
+.btn-p{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-p:hover{opacity:.87}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-x{border:none;background:transparent;color:var(--muted);padding:3px 7px;cursor:pointer;border-radius:var(--r);font-size:13px}
+.btn-x:hover{background:var(--red-bg);color:var(--red-text)}
+.rtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:var(--r);font-weight:600}
+.b-n{background:var(--bg3);color:var(--navy)}
+.b-a{background:#fdf0d8;color:#5a3a08}
+.b-t{background:#e0f4ec;color:#064a30}
+.b-c{background:#faeae6;color:#6b2510}
+.b-p{background:#eeedfe;color:#322080}
+.cpill{display:inline-block;font-size:10px;font-family:monospace;padding:2px 6px;border-radius:var(--r);background:var(--bg3);color:var(--navy);font-weight:700;border:1px solid var(--border)}
+.tok{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--r);background:var(--green-bg);color:var(--green-text);font-weight:600}
+.tlow{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--r);background:var(--warn-bg);color:var(--warn-text);font-weight:600}
+.tdef{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--r);background:var(--red-bg);color:var(--red-text);font-weight:600}
+.pgml{font-size:11px;color:var(--muted);font-family:monospace}
+.dayctrl{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.dayctrl label{font-size:12px;font-weight:600;color:var(--navy)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.plbl{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.pnote{font-size:11px;color:var(--muted);margin-top:4px}
+.de{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}
+.de-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.de-date{font-size:12px;font-weight:700;color:var(--navy)}
+.de-rx{font-size:11px;font-family:monospace;color:var(--navy);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;max-height:75px;overflow-y:auto;white-space:pre-wrap;line-height:1.5}
+.rbar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.rm{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:14px;text-align:center;box-shadow:var(--sh)}
+.rm-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.rm-val{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--navy)}
+.rm-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5}
+.rm-tot{border-color:var(--navy);background:var(--bg3)}
+.rtot td{font-weight:700;background:var(--bg3);border-top:2px solid var(--border)}
+.prodrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+.pdfs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pbtn{display:flex;align-items:center;gap:7px;padding:8px 16px;font-size:12px;border-radius:var(--r);cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg);color:var(--navy);font-weight:600;transition:all .15s}
+.pbtn:hover{background:var(--bg2)}
+.pbtn-p{background:var(--navy);color:#fff;border-color:var(--navy)}
+.pbtn-p:hover{opacity:.87}
+@media(max-width:700px){.pgrid{grid-template-columns:1fr}.rbar{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<div class="header">
-  <div class="logo">Formial Labs <span>/ COGS</span></div>
-  <nav class="nav">
-    <button class="nav-btn active" onclick="showPage('batches',this)">Batches</button>
-    <button class="nav-btn" onclick="showPage('cream',this)">Cream base</button>
-    <button class="nav-btn" onclick="showPage('foam',this)">Foam base</button>
-    <button class="nav-btn" onclick="showPage('packaging',this)">Packaging</button>
-    <button class="nav-btn" onclick="showPage('report',this);generateReport()" style="border:1px solid var(--border2);margin-left:8px">&#9656; Report</button>
+<div class="hdr">
+  <div class="logo">
+    <img src="data:image/png;base64,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" alt="">
+    <span>FORMIAL LABS PHARMACY</span>
+  </div>
+  <nav>
+    <button class="nb active" onclick="showPage('daily',this)">Daily Upload</button>
+    <button class="nb" onclick="showPage('manual',this)">Manual Usage</button>
+    <button class="nb" onclick="showPage('stock',this)">Stock</button>
+    <button class="nb nb-rpt" onclick="showPage('report',this);generateReport()">&#9654; Report</button>
   </nav>
 </div>
-<div class="content">
 
-<!-- BATCHES -->
-<div id="page-batches" class="page active">
-  <div class="summary-bar">
-    <div class="scard"><div class="scard-lbl">Prescriptions</div><div class="scard-val" id="s-rx">0</div><div class="scard-sub" id="s-rx-sub">—</div></div>
-    <div class="scard"><div class="scard-lbl">Ingredient cost</div><div class="scard-val" id="s-ing">&#8377;0</div><div class="scard-sub">APIs + excipients + bases</div></div>
-    <div class="scard"><div class="scard-lbl">Packaging cost</div><div class="scard-val" id="s-pkg">&#8377;0</div><div class="scard-sub">all kits + wastage</div></div>
-    <div class="scard scard-total"><div class="scard-lbl">Total COGS</div><div class="scard-val" id="s-total">&#8377;0</div><div class="scard-sub" id="s-per">— per prescription</div></div>
-  </div>
+<div class="wrap">
+
+<!-- DAILY UPLOAD -->
+<div id="page-daily" class="page active">
   <div class="card">
-    <div class="card-title">Prescription formulas — paste one per line</div>
-    <div class="info-box">
-      <strong>Cream (20g/50g):</strong> APIs + auto excipients (BHT, SMBS, EDTA if Azelaic) + solvent (Transcutol-P, or Propylene Glycol if TCS) + Cream Base remainder.<br>
-      <strong>Tretinoin stock sol:</strong> 0.1g Tret in 10ml Transcutol — both Tret and Transcutol deducted from stock sol usage, then Transcutol deducted again as solvent.<br>
-      <strong>Foam (50ml):</strong> listed APIs only + Foam Base remainder. No extra excipients.
+    <div class="ct">Daily prescription upload</div>
+    <div class="info">Select a date, paste that day's prescriptions, and hit <strong>Save day</strong>. Each day is stored separately. The Report aggregates all saved days. Re-upload a date to overwrite it.</div>
+    <div class="dayctrl">
+      <label>Date</label>
+      <input type="date" id="daily-date" style="width:160px">
+      <button class="btn btn-p btn-sm" onclick="saveDailyEntry()">Save day</button>
+      <span id="save-msg" style="font-size:11px;color:var(--navy);font-weight:600"></span>
     </div>
-    <div class="paste-grid">
+    <div class="pgrid">
       <div>
-        <div class="paste-label"><span class="badge b-blue">20 g</span> 20g cream prescriptions</div>
-        <textarea id="rx20" placeholder="Tretinoin 0.025% + Clindamycin 1% + Spironolactone 5%&#10;Tretinoin 0.020% + Niacinamide 4% + Azelaic Acid 4%"></textarea>
-        <div class="pg-note" id="count20">0 prescriptions</div>
+        <div class="plbl"><span class="badge b-n">20 g</span>20g cream</div>
+        <textarea id="d20" placeholder="Tretinoin 0.025% + Clindamycin 1% + Spironolactone 5%&#10;Tretinoin 0.020% + Niacinamide 4% + Azelaic Acid 4%"></textarea>
+        <div class="pnote" id="cnt20">0 prescriptions</div>
       </div>
       <div>
-        <div class="paste-label"><span class="badge b-amber">50 g</span> 50g cream prescriptions</div>
-        <textarea id="rx50" placeholder="Azelaic Acid 10% + Niacinamide 4%&#10;Tretinoin 0.015% + Kojic Acid 2%"></textarea>
-        <div class="pg-note" id="count50">0 prescriptions</div>
+        <div class="plbl"><span class="badge b-a">50 g</span>50g cream</div>
+        <textarea id="d50" placeholder="Azelaic Acid 10% + Niacinamide 4%&#10;Tretinoin 0.015% + Kojic Acid 2%"></textarea>
+        <div class="pnote" id="cnt50">0 prescriptions</div>
       </div>
       <div>
-        <div class="paste-label"><span class="badge b-teal">Foam 50ml</span> Foam prescriptions</div>
-        <textarea id="rxfoam" placeholder="Minoxidil 5% + Spironolactone 2%&#10;Minoxidil 5%"></textarea>
-        <div class="pg-note" id="countfoam">0 prescriptions</div>
+        <div class="plbl"><span class="badge b-t">Foam 50ml</span>Foam</div>
+        <textarea id="dfoam" placeholder="Minoxidil 5% + Spironolactone 2%&#10;Minoxidil 5%"></textarea>
+        <div class="pnote" id="cntfoam">0 prescriptions</div>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="row-actions">
-      <div class="card-title" style="margin:0">API, excipient &amp; base inventory</div>
+    <div class="rtop">
+      <div class="ct" style="margin:0">Saved days</div>
+      <button class="btn btn-sm" style="color:var(--red-text);border-color:#f5c5c5" onclick="clearAllDaily()">Clear all</button>
+    </div>
+    <div id="day-log"><p style="font-size:12px;color:var(--muted);padding:6px 0">No entries yet.</p></div>
+  </div>
+</div>
+
+<!-- MANUAL USAGE -->
+<div id="page-manual" class="page">
+  <div class="card">
+    <div class="ct">Manual ingredient usage</div>
+    <div class="info">Extra consumption not captured by prescriptions — research batches, failed batches, stability tests, samples. Select ingredient, enter grams and a reason. Cost is shown only in the Report.</div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th style="width:28px">#</th>
+          <th style="width:26%">Ingredient</th>
+          <th style="width:78px">Grams (g)</th>
+          <th style="width:115px">Date</th>
+          <th>Reason / note</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="man-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManualRow()">+ Add entry</button></div>
+  </div>
+</div>
+
+<!-- STOCK -->
+<div id="page-stock" class="page">
+  <div class="card">
+    <div class="rtop">
+      <div class="ct" style="margin:0">APIs, Excipients &amp; Bases</div>
       <button class="btn btn-sm" onclick="addApiRow()">+ Add</button>
     </div>
-    <div class="info-box" style="margin-bottom:12px">
-      Stock column = current quantity on hand. Bought + Price = last purchase batch for &#8377;/g calculation. <strong>Cream Base</strong> and <strong>Foam Base</strong> are tracked here as single bulk stock items — deducted automatically per batch.
-    </div>
-    <div class="tbl-wrap">
+    <div class="info">Stock = current on-hand grams. Bought + Price = last purchase batch (used only for &#8377;/g in the Report). <strong>CB</strong> and <strong>FB</strong> are bulk base stock deducted automatically per Rx.</div>
+    <div class="tw">
       <table>
         <thead><tr>
           <th style="width:22%">Name</th><th style="width:52px">Code</th><th style="width:52px">Type</th>
-          <th style="width:75px">Stock (g)</th><th style="width:75px">Bought (g)</th>
-          <th style="width:82px">Price (&#8377;)</th><th style="width:54px">&#8377;/g</th>
-          <th style="width:105px">Last restock</th><th style="width:30px"></th>
+          <th style="width:78px">Stock (g)</th><th style="width:78px">Bought (g)</th>
+          <th style="width:85px">Price (&#8377;)</th><th style="width:55px">&#8377;/g</th>
+          <th style="width:108px">Last restock</th><th style="width:28px"></th>
         </tr></thead>
         <tbody id="api-tbody"></tbody>
       </table>
     </div>
   </div>
-</div>
 
-<!-- CREAM BASE -->
-<div id="page-cream" class="page">
   <div class="card">
-    <div class="row-actions">
-      <div class="card-title" style="margin:0">Cream base ingredients</div>
+    <div class="rtop">
+      <div class="ct" style="margin:0">Cream base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('cream')">+ Add</button>
     </div>
-    <div class="info-box">Cream base ingredient breakdown. Enter grams produced below — each ingredient deducts proportionally by its % from stock. CB bulk stock in the inventory tab increases by the same amount.</div>
-    <div class="tbl-wrap">
+    <div class="info">Ingredient breakdown of the cream base. Enter grams produced this month — each ingredient deducts proportionally and CB bulk stock increases by the same amount.</div>
+    <div class="tw">
       <table>
         <thead><tr>
           <th style="width:24%">Name</th><th style="width:52px">Code</th>
-          <th style="width:75px">Stock (g)</th><th style="width:75px">Bought (g)</th>
-          <th style="width:82px">Price (&#8377;)</th><th style="width:54px">&#8377;/g</th>
-          <th style="width:65px">% in base</th><th style="width:105px">Last restock</th><th style="width:30px"></th>
+          <th style="width:78px">Stock (g)</th><th style="width:78px">Bought (g)</th>
+          <th style="width:85px">Price (&#8377;)</th><th style="width:55px">&#8377;/g</th>
+          <th style="width:68px">% in base</th><th style="width:108px">Last restock</th><th style="width:28px"></th>
         </tr></thead>
         <tbody id="cream-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Cream base produced this month</div>
-    <div class="produced-row">
-      <input type="number" id="cream-produced" placeholder="e.g. 2000" style="width:180px" min="0" oninput="updateSummary()">
-      <span style="font-size:12px;color:var(--text2)">grams made — deducts ingredients &amp; adds to CB stock</span>
+    <div class="prodrow">
+      <label style="font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap">Produced this month</label>
+      <input type="number" id="cream-prod" placeholder="e.g. 2000" style="width:160px" min="0" oninput="sv('cprod',+this.value)">
+      <span style="font-size:12px;color:var(--muted)">grams</span>
     </div>
   </div>
-</div>
 
-<!-- FOAM BASE -->
-<div id="page-foam" class="page">
   <div class="card">
-    <div class="row-actions">
-      <div class="card-title" style="margin:0">Foam base ingredients</div>
+    <div class="rtop">
+      <div class="ct" style="margin:0">Foam base ingredients</div>
       <button class="btn btn-sm" onclick="addBaseRow('foam')">+ Add</button>
     </div>
-    <div class="info-box">Foam base ingredient breakdown. Enter grams produced below — each ingredient deducts proportionally by its % from stock. FB bulk stock in the inventory tab increases by the same amount.</div>
-    <div class="tbl-wrap">
+    <div class="info">Ingredient breakdown of the foam base. FB bulk stock increases when production is entered.</div>
+    <div class="tw">
       <table>
         <thead><tr>
           <th style="width:24%">Name</th><th style="width:52px">Code</th>
-          <th style="width:75px">Stock (g)</th><th style="width:75px">Bought (g)</th>
-          <th style="width:82px">Price (&#8377;)</th><th style="width:54px">&#8377;/g</th>
-          <th style="width:65px">% in base</th><th style="width:105px">Last restock</th><th style="width:30px"></th>
+          <th style="width:78px">Stock (g)</th><th style="width:78px">Bought (g)</th>
+          <th style="width:85px">Price (&#8377;)</th><th style="width:55px">&#8377;/g</th>
+          <th style="width:68px">% in base</th><th style="width:108px">Last restock</th><th style="width:28px"></th>
         </tr></thead>
         <tbody id="foam-tbody"></tbody>
       </table>
     </div>
-    <div class="section-sub">Foam base produced this month</div>
-    <div class="produced-row">
-      <input type="number" id="foam-produced" placeholder="e.g. 1000" style="width:180px" min="0" oninput="updateSummary()">
-      <span style="font-size:12px;color:var(--text2)">grams made — deducts ingredients &amp; adds to FB stock</span>
+    <div class="prodrow">
+      <label style="font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap">Produced this month</label>
+      <input type="number" id="foam-prod" placeholder="e.g. 1000" style="width:160px" min="0" oninput="sv('fprod',+this.value)">
+      <span style="font-size:12px;color:var(--muted)">grams</span>
     </div>
   </div>
-</div>
 
-<!-- PACKAGING -->
-<div id="page-packaging" class="page">
   <div class="card">
-    <div class="card-title">Packaging stock</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Auto-deduct based on prescription count. Adjustment = extra wastage (positive) or returns (negative).</p>
-    <div class="tbl-wrap">
+    <div class="rtop">
+      <div class="ct" style="margin:0">Packaging stock</div>
+      <button class="btn btn-sm" onclick="addPkgRow()">+ Add item</button>
+    </div>
+    <div class="info">Auto-used = prescription count from all saved daily entries. Adjustment = extra wastage (+) or returns (&#8722;). Remaining = Stock &#8722; Auto &#8722; Adj.</div>
+    <div class="tw">
       <table>
         <thead><tr>
-          <th style="width:20%">Item</th><th style="width:60px">Stock</th>
-          <th style="width:75px">Price/unit (&#8377;)</th><th style="width:52px">Kit</th>
-          <th style="width:65px">Auto-used</th><th style="width:72px">Adjustment</th>
-          <th style="width:80px">Remaining</th><th style="width:105px">Last restock</th><th style="width:30px"></th>
+          <th style="width:20%">Item</th><th style="width:62px">Stock</th>
+          <th style="width:78px">Price/unit (&#8377;)</th><th style="width:52px">Kit</th>
+          <th style="width:68px">Auto-used</th><th style="width:72px">Adjustment</th>
+          <th style="width:90px">Remaining</th><th style="width:108px">Last restock</th><th style="width:28px"></th>
         </tr></thead>
         <tbody id="pkg-tbody"></tbody>
       </table>
     </div>
-    <div style="margin-top:12px"><button class="btn btn-sm" onclick="addPkgRow()">+ Add item</button></div>
   </div>
 </div>
 
 <!-- REPORT -->
 <div id="page-report" class="page">
-  <div class="report-header">
-    <div class="card-title">Monthly report</div>
-    <div class="date-row">
-      <label>From</label><input type="date" id="date-from">
-      <label>To</label><input type="date" id="date-to">
-      <button class="btn btn-primary btn-sm" onclick="generateReport()" style="padding:6px 14px">Refresh</button>
+  <div class="card">
+    <div class="ct">Monthly COGS report</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--navy)">From</label>
+      <input type="date" id="date-from" style="width:150px">
+      <label style="font-size:12px;font-weight:600;color:var(--navy)">To</label>
+      <input type="date" id="date-to" style="width:150px">
+      <button class="btn btn-p btn-sm" onclick="generateReport()">Refresh</button>
     </div>
-    <div class="pdf-btn-row">
-      <button class="pdf-btn pdf-btn-primary" onclick="downloadSummaryPDF()">&#8659; Summary PDF &nbsp;<span style="font-size:11px;opacity:.7;font-weight:400">costs &amp; packaging</span></button>
-      <button class="pdf-btn" onclick="downloadDetailPDF()">&#8659; Detailed PDF &nbsp;<span style="font-size:11px;opacity:.7;font-weight:400">full stock &amp; ingredient usage</span></button>
+    <div class="pdfs">
+      <button class="pbtn pbtn-p" onclick="dlSummary()">&#8659; Summary PDF</button>
+      <button class="pbtn" onclick="dlDetail()">&#8659; Detailed PDF</button>
     </div>
   </div>
-  <div class="report-metrics" id="report-metrics"></div>
-  <div class="card" id="rcard-breakdown" style="display:none">
-    <div class="card-title">Cost breakdown</div>
-    <div class="tbl-wrap"><table id="report-breakdown"></table></div>
-  </div>
-  <div class="card" id="rcard-stock" style="display:none">
-    <div class="card-title">Ingredient stock &mdash; <span style="font-size:10px;font-family:monospace;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">codes only</span></div>
-    <div class="tbl-wrap"><table id="report-stock"></table></div>
-  </div>
-  <div class="card" id="rcard-pkg" style="display:none">
-    <div class="card-title">Packaging remaining</div>
-    <div class="tbl-wrap"><table id="report-pkg"></table></div>
-  </div>
+  <div class="rbar" id="rbar"></div>
+  <div class="card" id="rc-cost" style="display:none"><div class="ct">Cost breakdown</div><div class="tw"><table id="t-cost"></table></div></div>
+  <div class="card" id="rc-man"  style="display:none"><div class="ct">Manual usage</div><div class="tw"><table id="t-man"></table></div></div>
+  <div class="card" id="rc-daily" style="display:none"><div class="ct">Daily prescription log</div><div class="tw"><table id="t-daily"></table></div></div>
+  <div class="card" id="rc-stock" style="display:none"><div class="ct">Ingredient stock — <span style="font-size:10px;font-family:monospace;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">codes only</span></div><div class="tw"><table id="t-stock"></table></div></div>
+  <div class="card" id="rc-pkg"  style="display:none"><div class="ct">Packaging</div><div class="tw"><table id="t-pkg"></table></div></div>
 </div>
 
 </div>
-
 <script>
-// ── storage ───────────────────────────────────────────────────────
-function sv(k,v){try{localStorage.setItem('fml_cogs_'+k,JSON.stringify(v))}catch(e){}}
-function lv(k,d){try{var v=localStorage.getItem('fml_cogs_'+k);return v!=null?JSON.parse(v):d}catch(e){return d}}
+// storage
+function sv(k,v){try{localStorage.setItem('fl3_'+k,JSON.stringify(v))}catch(e){}}
+function lv(k,d){try{var x=localStorage.getItem('fl3_'+k);return x!=null?JSON.parse(x):d}catch(e){return d}}
 
-// ── constants ─────────────────────────────────────────────────────
-var TRET_CONC = 0.1;   // 0.1g tret per 10ml transcutol = 0.01g/ml
-var EXC_PCT   = 0.1;   // each excipient = 0.1%
+var TRET_CONC=0.1,EXC_PCT=0.1;
 
-// ── defaults ──────────────────────────────────────────────────────
-var DEF_APIS=[
-  // APIs
-  {name:'Tretinoin',        code:'TRE',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Azelaic Acid',     code:'AZA',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Niacinamide',      code:'NIA',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Spironolactone',   code:'SPIRO',type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Clindamycin',      code:'CLIN', type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Minoxidil',        code:'MINO', type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Tranexamic Acid',  code:'TXA',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Kojic Acid',       code:'KOJ',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Hydroquinone',     code:'HQ',   type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Hyaluronic Acid',  code:'HA',   type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Adapalene',        code:'ADA',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Benzoyl Peroxide', code:'BPO',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Hydrocortisone',   code:'HC',   type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Alpha Arbutin',    code:'AA',   type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Ivermectin',       code:'IVM',  type:'API', stock:0,bought:0,price:0,restock:''},
-  {name:'Metronidazole',    code:'MTZ',  type:'API', stock:0,bought:0,price:0,restock:''},
-  // Excipients
+// defaults
+var DA=[
+  {name:'Tretinoin',         code:'TRE',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Azelaic Acid',      code:'AZA',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Niacinamide',       code:'NIA',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Spironolactone',    code:'SPIRO',type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Clindamycin',       code:'CLIN', type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Minoxidil',         code:'MINO', type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Tranexamic Acid',   code:'TXA',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Kojic Acid',        code:'KOJ',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Hydroquinone',      code:'HQ',   type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Hyaluronic Acid',   code:'HA',   type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Adapalene',         code:'ADA',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Benzoyl Peroxide',  code:'BPO',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Hydrocortisone',    code:'HC',   type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Alpha Arbutin',     code:'AA',   type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Ivermectin',        code:'IVM',  type:'API',stock:0,bought:0,price:0,restock:''},
+  {name:'Metronidazole',     code:'MTZ',  type:'API',stock:0,bought:0,price:0,restock:''},
   {name:'Sodium Metabisulphite',code:'SMBS',type:'EXC',stock:0,bought:0,price:0,restock:''},
-  {name:'BHT',              code:'BHT',  type:'EXC', stock:0,bought:0,price:0,restock:''},
-  {name:'Disodium EDTA',    code:'EDTA', type:'EXC', stock:0,bought:0,price:0,restock:''},
-  {name:'Transcutol-P',     code:'TCP',  type:'EXC', stock:0,bought:0,price:0,restock:''},
-  {name:'Propylene Glycol', code:'PG',   type:'EXC', stock:0,bought:0,price:0,restock:''},
-  // Bases (bulk stock)
-  {name:'Cream Base',       code:'CB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
-  {name:'Foam Base',        code:'FB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
+  {name:'BHT',               code:'BHT',  type:'EXC',stock:0,bought:0,price:0,restock:''},
+  {name:'Disodium EDTA',     code:'EDTA', type:'EXC',stock:0,bought:0,price:0,restock:''},
+  {name:'Transcutol-P',      code:'TCP',  type:'EXC',stock:0,bought:0,price:0,restock:''},
+  {name:'Propylene Glycol',  code:'PG',   type:'EXC',stock:0,bought:0,price:0,restock:''},
+  {name:'Cream Base',        code:'CB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
+  {name:'Foam Base',         code:'FB',   type:'BASE',stock:0,bought:0,price:0,restock:''},
+];
+var DC=[
+  {name:'DM Water',            code:'DMW', stock:0,bought:0,price:0,pct:82.2,restock:''},
+  {name:'Glycerin',            code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Hyaluronic Acid',     code:'HA-C',stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Carbopol',            code:'CARB',stock:0,bought:0,price:0,pct:1.3, restock:''},
+  {name:'Triethanolamine',     code:'TEA', stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'Isopropyl Palmitate', code:'IPP', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Isopropyl Myristate', code:'IPM', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Olivem',              code:'OLV', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Emulsifying Wax',     code:'EWAX',stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Dimethicone',         code:'DMTC',stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Cetiol',              code:'CTL', stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'PhenHEG',             code:'PHG', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Vitamin E',           code:'VTE', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Sorbic Acid',         code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
+  {name:'Panthenol',           code:'PANT',stock:0,bought:0,price:0,pct:1,   restock:''},
+  {name:'Licorice Extract',    code:'LIC', stock:0,bought:0,price:0,pct:1,   restock:''},
+];
+var DF=[
+  {name:'DM Water',             code:'DMW', stock:0,bought:0,price:0,pct:68.5,restock:''},
+  {name:'Decyl Glucoside',      code:'DG',  stock:0,bought:0,price:0,pct:4,   restock:''},
+  {name:'Glycerin',             code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
+  {name:'Propanediol',          code:'PDO', stock:0,bought:0,price:0,pct:7,   restock:''},
+  {name:'Sodium Lactate',       code:'SLA', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Lactic Acid',          code:'LA',  stock:0,bought:0,price:0,pct:4,   restock:''},
+  {name:'Pea Sprout Extract',   code:'PSE', stock:0,bought:0,price:0,pct:0.5, restock:''},
+  {name:'Panthenol',            code:'PANT',stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Polyquaternium-10',    code:'PQ10',stock:0,bought:0,price:0,pct:0.6, restock:''},
+  {name:'Polyquaternium-7',     code:'PQ7', stock:0,bought:0,price:0,pct:0.6, restock:''},
+  {name:'Phenoxyethanol',       code:'PHE', stock:0,bought:0,price:0,pct:0.8, restock:''},
+  {name:'Sodium Benzoate',      code:'SBZ', stock:0,bought:0,price:0,pct:0.4, restock:''},
+  {name:'Denatured Ethanol',    code:'ETH', stock:0,bought:0,price:0,pct:10,  restock:''},
+  {name:'Zinc PCA',             code:'ZPCA',stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'Sodium Metabisulfite', code:'SMBS',stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'Disodium EDTA',        code:'EDTA',stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'BHT',                  code:'BHT', stock:0,bought:0,price:0,pct:0.1, restock:''},
+  {name:'Sorbic Acid',          code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
+];
+var DP=[
+  {name:'15ml pump',    stock:0,price:0,kit:'20g',adj:0,restock:''},
+  {name:'Flyer (small)',stock:0,price:0,kit:'20g',adj:0,restock:''},
+  {name:'Box (small)',  stock:0,price:0,kit:'20g',adj:0,restock:''},
+  {name:'Sleeve',       stock:0,price:0,kit:'20g',adj:0,restock:''},
+  {name:'Sticker',      stock:0,price:0,kit:'20g',adj:0,restock:''},
+  {name:'50ml pump',    stock:0,price:0,kit:'50g',adj:0,restock:''},
+  {name:'Flyer (big)',  stock:0,price:0,kit:'50g',adj:0,restock:''},
+  {name:'Box (big)',    stock:0,price:0,kit:'50g',adj:0,restock:''},
+  {name:'Foam pump',    stock:0,price:0,kit:'foam',adj:0,restock:''},
 ];
 
-var DEF_CREAM=[
-  {name:'DM Water',           code:'DMW', stock:0,bought:0,price:0,pct:82.2,restock:''},
-  {name:'Glycerin',           code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Hyaluronic Acid',    code:'HA-C',stock:0,bought:0,price:0,pct:0.5, restock:''},
-  {name:'Carbopol',           code:'CARB',stock:0,bought:0,price:0,pct:1.3, restock:''},
-  {name:'Triethanolamine',    code:'TEA', stock:0,bought:0,price:0,pct:1,   restock:''},
-  {name:'Isopropyl Palmitate',code:'IPP', stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Isopropyl Myristate',code:'IPM', stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Olivem',             code:'OLV', stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Emulsifying Wax',    code:'EWAX',stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Beeswax',            code:'BWX', stock:0,bought:0,price:0,pct:0,   restock:''},
-  {name:'Dimethicone',        code:'DMTC',stock:0,bought:0,price:0,pct:0.8, restock:''},
-  {name:'Cetiol',             code:'CTL', stock:0,bought:0,price:0,pct:1,   restock:''},
-  {name:'PhenHEG',            code:'PHG', stock:0,bought:0,price:0,pct:0.5, restock:''},
-  {name:'Vitamin E',          code:'VTE', stock:0,bought:0,price:0,pct:0.5, restock:''},
-  {name:'Sorbic Acid',        code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
-  {name:'Panthenol',          code:'PANT',stock:0,bought:0,price:0,pct:1,   restock:''},
-  {name:'Licorice Extract',   code:'LIC', stock:0,bought:0,price:0,pct:1,   restock:''},
-];
+var apis=lv('apis',DA),cream=lv('cream',DC),foam=lv('foam',DF),pkg=lv('pkg',DP);
+var dailyLog=lv('dlog',{}),manualUsage=lv('muse',[]);
 
-var DEF_FOAM=[
-  {name:'DM Water',           code:'DMW', stock:0,bought:0,price:0,pct:68.5,restock:''},
-  {name:'Decyl Glucoside',    code:'DG',  stock:0,bought:0,price:0,pct:4,   restock:''},
-  {name:'Glycerin',           code:'GLY', stock:0,bought:0,price:0,pct:2,   restock:''},
-  {name:'Propanediol',        code:'PDO', stock:0,bought:0,price:0,pct:7,   restock:''},
-  {name:'Sodium Lactate',     code:'SLA', stock:0,bought:0,price:0,pct:0.5, restock:''},
-  {name:'Lactic Acid',        code:'LA',  stock:0,bought:0,price:0,pct:4,   restock:''},
-  {name:'Pea Sprout Extract', code:'PSE', stock:0,bought:0,price:0,pct:0.5, restock:''},
-  {name:'Panthenol',          code:'PANT',stock:0,bought:0,price:0,pct:0.8, restock:''},
-  {name:'Polyquaternium-10',  code:'PQ10',stock:0,bought:0,price:0,pct:0.6, restock:''},
-  {name:'Polyquaternium-7',   code:'PQ7', stock:0,bought:0,price:0,pct:0.6, restock:''},
-  {name:'Phenoxyethanol',     code:'PHE', stock:0,bought:0,price:0,pct:0.8, restock:''},
-  {name:'Sodium Benzoate',    code:'SBZ', stock:0,bought:0,price:0,pct:0.4, restock:''},
-  {name:'Denatured Ethanol',  code:'ETH', stock:0,bought:0,price:0,pct:10,  restock:''},
-  {name:'Zinc PCA',           code:'ZPCA',stock:0,bought:0,price:0,pct:0.1, restock:''},
-  {name:'Sodium Metabisulfite',code:'SMBS',stock:0,bought:0,price:0,pct:0.1,restock:''},
-  {name:'Disodium EDTA',      code:'EDTA',stock:0,bought:0,price:0,pct:0.1, restock:''},
-  {name:'BHT',                code:'BHT', stock:0,bought:0,price:0,pct:0.1, restock:''},
-  {name:'Sorbic Acid',        code:'SBA', stock:0,bought:0,price:0,pct:0.2, restock:''},
-];
-
-var DEF_PKG=[
-  {name:'15ml pump',    stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Flyer (small)',stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Box (small)',  stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Sleeve',       stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Sticker',      stock:0,price:0,kit:'20g', qtyPerKit:1,adj:0,restock:''},
-  {name:'50ml pump',    stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Flyer (big)',  stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Box (big)',    stock:0,price:0,kit:'50g', qtyPerKit:1,adj:0,restock:''},
-  {name:'Foam pump',    stock:0,price:0,kit:'foam',qtyPerKit:1,adj:0,restock:''},
-];
-
-var apis  = lv('apis',  DEF_APIS);
-var cream = lv('cream', DEF_CREAM);
-var foam  = lv('foam',  DEF_FOAM);
-var pkg   = lv('pkg',   DEF_PKG);
-
-// ── navigation ────────────────────────────────────────────────────
+// nav
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
-  document.querySelectorAll('.nav-btn,.nav-report').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('active')});
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
+  if(id==='stock')renderPkg();
 }
 
-// ── helpers ───────────────────────────────────────────────────────
+// helpers
 function norm(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'')}
-function pgm(ing){return ing.bought>0?(ing.price/ing.bought).toFixed(3):'-'}
-function fmtINR(n){return '\u20B9'+Math.round(n).toLocaleString('en-IN')}
+function pgm(a){return a.bought>0?(a.price/a.bought).toFixed(3):'-'}
+function fINR(n){return '\u20B9'+Math.round(n).toLocaleString('en-IN')}
 function pct(v,t){return t>0?((v/t)*100).toFixed(1):'0.0'}
-function countLines(id){return(document.getElementById(id).value||'').split('\n').filter(function(l){return l.trim()}).length}
+function cL(txt){return(txt||'').split('\n').filter(function(l){return l.trim()}).length}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function stag(rem,op){if(rem<0)return'<span class="tdef">Deficit</span>';if(op>0&&rem<op*0.15)return'<span class="tlow">Low</span>';return'<span class="tok">OK</span>'}
+function tbadge(t){if(t==='API')return'<span class="badge b-c" style="font-size:10px">API</span>';if(t==='EXC')return'<span class="badge b-p" style="font-size:10px">EXC</span>';if(t==='BASE')return'<span class="badge b-a" style="font-size:10px">BASE</span>';return''}
+function genCode(name,exist){var w=name.trim().split(/\s+/);var c=w.length===1?name.substring(0,4).toUpperCase():w.map(function(x){return x[0]}).join('').toUpperCase().substring(0,5);var f=c,n=2;while(exist.indexOf(f)>=0)f=c+(n++);return f}
+function cpg(a){return a&&a.bought>0?a.price/a.bought:0}
+function show(id){document.getElementById(id).style.display='block'}
+function hide(id){document.getElementById(id).style.display='none'}
 
-function stockTag(rem,opening){
-  if(rem<0) return '<span class="tag-def">Deficit</span>';
-  if(opening>0&&rem<opening*0.15) return '<span class="tag-low">Low</span>';
-  return '<span class="tag-ok">OK</span>';
-}
-function typeBadge(t){
-  if(t==='API')  return '<span class="badge b-coral"  style="font-size:10px">API</span>';
-  if(t==='EXC')  return '<span class="badge b-purple" style="font-size:10px">EXC</span>';
-  if(t==='BASE') return '<span class="badge b-amber"  style="font-size:10px">BASE</span>';
-  return '';
-}
-function genCode(name,existing){
-  var words=name.trim().split(/\s+/);
-  var code=words.length===1?name.substring(0,4).toUpperCase():words.map(function(w){return w[0]}).join('').toUpperCase().substring(0,5);
-  var final=code,n=2;
-  while(existing.indexOf(final)>=0) final=code+(n++);
-  return final;
-}
-
-// ── find ingredient in apis by name (fuzzy) ───────────────────────
-function findApi(name){
-  var n=norm(name);
-  return apis.find(function(a){
-    return norm(a.name)===n||n.indexOf(norm(a.name))>=0||norm(a.name).indexOf(n)>=0;
-  })||null;
-}
-function findApiByCode(code){
-  return apis.find(function(a){return a.code===code})||null;
-}
-
-// ── batch deduction logic (matches formial_batches.html) ──────────
-function isTCS(apiList){
-  var names=apiList.map(function(i){return norm(i.name)});
-  return names.some(function(n){return n.includes('tretinoin')})
-      && names.some(function(n){return n.includes('clindamycin')})
-      && names.some(function(n){return n.includes('spironolactone')});
-}
-function hasAzelaic(apiList){
-  return apiList.some(function(i){return norm(i.name).includes('azelaic')});
-}
-function hasTretinoin(apiList){
-  return apiList.some(function(i){return norm(i.name).includes('tretinoin')});
-}
-
-// Returns a deduction map: {normName: grams} for a single cream prescription
-function calcCreamDeductions(apiList, batchSize){
-  var deductions={};
-  function add(key,grams){deductions[key]=(deductions[key]||0)+grams;}
-
-  var tcs=isTCS(apiList);
-  var hasAz=hasAzelaic(apiList);
-  var hasTret=hasTretinoin(apiList);
-
-  // Step 1: listed APIs
-  var nonTretApiGrams=0;
-  apiList.forEach(function(api){
-    var grams=(api.pct/100)*batchSize;
-    var isTret=norm(api.name).includes('tretinoin');
-    if(isTret){
-      // Tret: stock sol = grams needed ÷ TRET_CONC (g/ml) gives ml of stock sol
-      // stock sol has 0.1g tret per 10ml transcutol → 1ml sol = 0.01g tret + 1ml TCP
-      var mlStockSol = grams / (TRET_CONC/10); // grams / 0.01 = ml of stock sol
-      add('tretinoin', grams);                  // deduct actual tret grams
-      add('transcutolp', mlStockSol);           // deduct TCP used in stock sol (ml≈g)
-    } else {
-      add(norm(api.name), grams);
-      nonTretApiGrams+=grams;
-    }
+// aggregate rx from daily log, optionally filtered by date range
+function aggRx(from,to){
+  var a20=[],a50=[],af=[];
+  Object.keys(dailyLog).forEach(function(d){
+    if(from&&d<from)return;
+    if(to&&d>to)return;
+    var e=dailyLog[d];
+    if(e.rx20)e.rx20.split('\n').filter(Boolean).forEach(function(l){a20.push(l)});
+    if(e.rx50)e.rx50.split('\n').filter(Boolean).forEach(function(l){a50.push(l)});
+    if(e.rxfoam)e.rxfoam.split('\n').filter(Boolean).forEach(function(l){af.push(l)});
   });
-
-  // Step 2: auto excipients
-  add('bht',  (EXC_PCT/100)*batchSize);
-  add('sodiummeta', (EXC_PCT/100)*batchSize); // SMBS
-  if(hasAz){
-    add('edta', (EXC_PCT/100)*batchSize);
-  }
-
-  // Step 3: solvent = 50% of non-Tret API weight
-  var solventG = nonTretApiGrams * 0.5;
-  if(tcs){
-    add('propylenegly', solventG);
-  } else {
-    add('transcutolp', solventG); // adds to TCP already deducted above
-  }
-
-  // Step 4: cream base remainder
-  var usedPct = apiList.reduce(function(s,i){return s+i.pct},0)
-               + EXC_PCT*2 + (hasAz?EXC_PCT:0)
-               + (nonTretApiGrams*0.5/batchSize*100);
-  var basePct = Math.max(0, 100 - usedPct);
-  add('creambase', (basePct/100)*batchSize);
-
-  return deductions;
+  return{rx20:a20.join('\n'),rx50:a50.join('\n'),rxfoam:af.join('\n')};
 }
 
-// Returns deduction map for a single foam prescription (50ml = 50g)
-function calcFoamDeductions(apiList){
-  var batchSize=50;
-  var deductions={};
-  function add(key,grams){deductions[key]=(deductions[key]||0)+grams;}
+// deduction engine
+function isTCS(al){var ns=al.map(function(i){return norm(i.name)});return ns.some(function(n){return n.includes('tretinoin')})&&ns.some(function(n){return n.includes('clindamycin')})&&ns.some(function(n){return n.includes('spironolactone')})}
+function hasAz(al){return al.some(function(i){return norm(i.name).includes('azelaic')})}
+function cDed(al,bs){
+  var d={};function add(k,g){d[k]=(d[k]||0)+g}
+  var tcs=isTCS(al),az=hasAz(al),ntg=0;
+  al.forEach(function(api){var g=(api.pct/100)*bs,isTr=norm(api.name).includes('tretinoin');if(isTr){var ml=g/(TRET_CONC/10);add('tretinoin',g);add('transcutolp',ml)}else{add(norm(api.name),g);ntg+=g}});
+  add('bht',(EXC_PCT/100)*bs);add('sodiummeta',(EXC_PCT/100)*bs);
+  if(az)add('edta',(EXC_PCT/100)*bs);
+  if(tcs)add('propylenegly',ntg*0.5);else add('transcutolp',ntg*0.5);
+  var up=al.reduce(function(s,i){return s+i.pct},0)+EXC_PCT*2+(az?EXC_PCT:0)+(ntg*0.5/bs*100);
+  add('creambase',(Math.max(0,100-up)/100)*bs);return d;
+}
+function fDed(al){var bs=50,d={},up=0;al.forEach(function(api){d[norm(api.name)]=(d[norm(api.name)]||0)+(api.pct/100)*bs;up+=api.pct});d['foambase']=(d['foambase']||0)+(Math.max(0,100-up)/100)*bs;return d}
+function mDed(maps){var m={};maps.forEach(function(x){Object.keys(x).forEach(function(k){m[k]=(m[k]||0)+x[k]})});return m}
+var SM={'tretinoin':function(){return apis.find(function(a){return norm(a.name).includes('tretinoin')&&a.type==='API'})},
+ 'transcutolp':function(){return apis.find(function(a){return norm(a.name).includes('transcutol')})},
+ 'bht':function(){return apis.find(function(a){return norm(a.code)==='bht'||norm(a.name)==='bht'})},
+ 'sodiummeta':function(){return apis.find(function(a){return norm(a.name).includes('metabisulph')||norm(a.name).includes('metabisulf')})},
+ 'edta':function(){return apis.find(function(a){return norm(a.name).includes('edta')})},
+ 'propylenegly':function(){return apis.find(function(a){return norm(a.name).includes('propylene')})},
+ 'creambase':function(){return apis.find(function(a){return a.code==='CB'})},
+ 'foambase':function(){return apis.find(function(a){return a.code==='FB'})}};
+function resD(ded){return Object.keys(ded).map(function(k){var g=ded[k],ing=null;if(SM[k])ing=SM[k]();else ing=apis.find(function(a){var n=norm(a.name);return n===k||k.indexOf(n)>=0||n.indexOf(k)>=0});return{key:k,grams:g,ing:ing}})}
+function parseRx(txt,sz){if(!txt.trim())return[];return txt.trim().split('\n').filter(Boolean).map(function(line){var al=line.split('+').map(function(s){s=s.trim();var m=s.match(/^(.+?)\s+([\d.]+)%/);return m?{name:m[1].trim(),pct:parseFloat(m[2])}:null}).filter(Boolean);return{raw:line.trim(),apiList:al,size:sz}})}
 
-  var usedPct=0;
-  apiList.forEach(function(api){
-    var grams=(api.pct/100)*batchSize;
-    add(norm(api.name), grams);
-    usedPct+=api.pct;
-  });
-
-  // foam base remainder
-  var basePct=Math.max(0,100-usedPct);
-  add('foambase',(basePct/100)*batchSize);
-
-  return deductions;
+function calcAll(from,to){
+  var agg=aggRx(from,to);
+  var r20=parseRx(agg.rx20,20),r50=parseRx(agg.rx50,50),rf=parseRx(agg.rxfoam,50);
+  var n20=r20.length,n50=r50.length,nf=rf.length,tot=n20+n50+nf;
+  var allDed=mDed(r20.concat(r50).map(function(rx){return cDed(rx.apiList,rx.size)}).concat(rf.map(function(rx){return fDed(rx.apiList)})));
+  var resolved=resD(allDed);
+  var ingCost=0,usageMap={};
+  resolved.forEach(function(r){var c=r.ing?cpg(r.ing)*r.grams:0;ingCost+=c;var code=r.ing?r.ing.code:r.key;if(!usageMap[code])usageMap[code]={grams:0,cost:0,ing:r.ing};usageMap[code].grams+=r.grams;usageMap[code].cost+=c});
+  // manual usage — filter by date range if provided
+  var filteredManual=manualUsage.filter(function(e){if(from&&e.date&&e.date<from)return false;if(to&&e.date&&e.date>to)return false;return true});
+  var manCost=0,manByCode={};
+  filteredManual.forEach(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);manCost+=c;if(!manByCode[e.ingCode])manByCode[e.ingCode]={grams:0,cost:0,name:e.ingName};manByCode[e.ingCode].grams+=e.grams||0;manByCode[e.ingCode].cost+=c});
+  ingCost+=manCost;
+  var cp=+(lv('cprod',0)),fp=+(lv('fprod',0));
+  var cIngU={};cream.forEach(function(a){var u=(a.pct/100)*cp;cIngU[a.code]={grams:u,cost:cpg(a)*u}});
+  var fIngU={};foam.forEach(function(a){var u=(a.pct/100)*fp;fIngU[a.code]={grams:u,cost:cpg(a)*u}});
+  var pkgCost=0;pkg.forEach(function(p){var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;pkgCost+=(au+(p.adj||0))*p.price});
+  return{n20:n20,n50:n50,nf:nf,tot:tot,usageMap:usageMap,ingCost:ingCost,cProd:cp,fProd:fp,cIngU:cIngU,fIngU:fIngU,pkgCost:pkgCost,manCost:manCost,manByCode:manByCode,filteredManual:filteredManual,grand:ingCost+pkgCost};
 }
 
-// Merge deduction maps
-function mergeDeductions(maps){
-  var merged={};
-  maps.forEach(function(m){
-    Object.keys(m).forEach(function(k){
-      merged[k]=(merged[k]||0)+m[k];
-    });
-  });
-  return merged;
-}
-
-// Map deduction key → apis array entry
-// Keys used: norm of api name, 'tretinoin','transcutolp','bht','sodiummeta','edta',
-//            'propylenegly','creambase','foambase'
-function resolveDeductions(deductions){
-  var result=[];
-  var specialMap={
-    'tretinoin':    function(){return apis.find(function(a){return norm(a.name).includes('tretinoin')&&a.type==='API'})},
-    'transcutolp':  function(){return apis.find(function(a){return norm(a.name).includes('transcutol')})},
-    'bht':          function(){return apis.find(function(a){return norm(a.name)==='bht'||norm(a.name).includes('bht')})},
-    'sodiummeta':   function(){return apis.find(function(a){return norm(a.name).includes('metabisulph')||norm(a.name).includes('metabisulf')})},
-    'edta':         function(){return apis.find(function(a){return norm(a.name).includes('edta')})},
-    'propylenegly': function(){return apis.find(function(a){return norm(a.name).includes('propylene')})},
-    'creambase':    function(){return apis.find(function(a){return norm(a.name)==='creambase'||a.code==='CB'})},
-    'foambase':     function(){return apis.find(function(a){return norm(a.name)==='foambase'||a.code==='FB'})},
-  };
-  Object.keys(deductions).forEach(function(key){
-    var grams=deductions[key];
-    var ing=null;
-    if(specialMap[key]){
-      ing=specialMap[key]();
-    } else {
-      ing=apis.find(function(a){
-        var n=norm(a.name);
-        return n===key||key.indexOf(n)>=0||n.indexOf(key)>=0;
-      });
-    }
-    result.push({key:key,grams:grams,ing:ing});
-  });
-  return result;
-}
-
-// ── parse prescriptions ───────────────────────────────────────────
-function parseRx(text,size){
-  if(!text.trim()) return[];
-  return text.trim().split('\n').filter(function(l){return l.trim()}).map(function(line){
-    var apiList=line.split('+').map(function(s){
-      s=s.trim();
-      var m=s.match(/^(.+?)\s+([\d.]+)%/);
-      return m?{name:m[1].trim(),pct:parseFloat(m[2])}:null;
-    }).filter(Boolean);
-    return{raw:line.trim(),apiList:apiList,size:size};
-  });
-}
-
-// ── cost calculation ──────────────────────────────────────────────
-function getIngCostPerG(ing){
-  if(!ing||ing.bought<=0) return 0;
-  return ing.price/ing.bought;
-}
-
-function calcAll(){
-  var rxs20=parseRx(document.getElementById('rx20').value,20);
-  var rxs50=parseRx(document.getElementById('rx50').value,50);
-  var rxsF =parseRx(document.getElementById('rxfoam').value,50); // foam = 50ml = 50g
-  var n20=rxs20.length,n50=rxs50.length,nF=rxsF.length;
-  var totalRx=n20+n50+nF;
-
-  // collect all deduction maps
-  var creamMaps=[];
-  rxs20.concat(rxs50).forEach(function(rx){
-    creamMaps.push(calcCreamDeductions(rx.apiList,rx.size));
-  });
-  var foamMaps=[];
-  rxsF.forEach(function(rx){
-    foamMaps.push(calcFoamDeductions(rx.apiList));
-  });
-
-  var creamDed=mergeDeductions(creamMaps);
-  var foamDed=mergeDeductions(foamMaps);
-  var allDed=mergeDeductions([creamDed,foamDed]);
-
-  // resolve to ingredients and calculate cost
-  var resolved=resolveDeductions(allDed);
-  var totalIngCost=0;
-  var usageMap={}; // code → {grams,cost}
-  resolved.forEach(function(r){
-    var cost=r.ing?getIngCostPerG(r.ing)*r.grams:0;
-    totalIngCost+=cost;
-    var code=r.ing?r.ing.code:r.key;
-    if(!usageMap[code]) usageMap[code]={grams:0,cost:0,ing:r.ing};
-    usageMap[code].grams+=r.grams;
-    usageMap[code].cost+=cost;
-  });
-
-  // base production this month
-  var creamProd=parseFloat(document.getElementById('cream-produced')?document.getElementById('cream-produced').value:0)||0;
-  var foamProd =parseFloat(document.getElementById('foam-produced')?document.getElementById('foam-produced').value:0)||0;
-
-  // cream ingredient deductions from production
-  var creamIngUsage={}; // code -> grams used
-  cream.forEach(function(ing){
-    var used=(ing.pct/100)*creamProd;
-    creamIngUsage[ing.code]={ing:ing,grams:used,cost:ing.bought>0?(ing.price/ing.bought)*used:0};
-  });
-  // foam ingredient deductions from production
-  var foamIngUsage={};
-  foam.forEach(function(ing){
-    var used=(ing.pct/100)*foamProd;
-    foamIngUsage[ing.code]={ing:ing,grams:used,cost:ing.bought>0?(ing.price/ing.bought)*used:0};
-  });
-
-  // packaging
-  var totalPkgCost=0;
-  pkg.forEach(function(p){
-    var auto=p.kit==='20g'?n20:p.kit==='50g'?n50:nF;
-    totalPkgCost+=(auto+(p.adj||0))*p.price;
-  });
-
-  return{
-    rxs20:rxs20,rxs50:rxs50,rxsF:rxsF,n20:n20,n50:n50,nF:nF,totalRx:totalRx,
-    creamDed:creamDed,foamDed:foamDed,allDed:allDed,
-    resolved:resolved,usageMap:usageMap,
-    totalIngCost:totalIngCost,
-    creamProd:creamProd,foamProd:foamProd,
-    creamIngUsage:creamIngUsage,foamIngUsage:foamIngUsage,
-    totalPkgCost:totalPkgCost,
-    grandTotal:totalIngCost+totalPkgCost
-  };
-}
-
-function baseCpg(arr){
-  return arr.reduce(function(s,ing){
-    return s+(ing.bought>0?(ing.pct/100)*(ing.price/ing.bought):0);
-  },0);
-}
-
-// ── live summary ──────────────────────────────────────────────────
-function updateSummary(){
-  var d=calcAll();
-  document.getElementById('s-rx').textContent=d.totalRx;
-  document.getElementById('s-rx-sub').textContent=d.n20+'\u00d720g \u00b7 '+d.n50+'\u00d750g \u00b7 '+d.nF+'\u00d7foam';
-  document.getElementById('s-ing').textContent=fmtINR(d.totalIngCost);
-  document.getElementById('s-pkg').textContent=fmtINR(d.totalPkgCost);
-  document.getElementById('s-total').textContent=fmtINR(d.grandTotal);
-  document.getElementById('s-per').textContent='';
-}
-
-// ── render tables ─────────────────────────────────────────────────
+// render stock tables
 function renderApis(){
   document.getElementById('api-tbody').innerHTML=apis.map(function(a,i){return(
-    '<tr>'+
-    '<td><input type="text" value="'+esc(a.name)+'" onchange="apis['+i+'].name=this.value;sv(\'apis\',apis)"></td>'+
-    '<td><span class="code-pill">'+esc(a.code||'?')+'</span></td>'+
-    '<td>'+typeBadge(a.type)+'</td>'+
+    '<tr><td><input type="text" value="'+esc(a.name)+'" onchange="apis['+i+'].name=this.value;sv(\'apis\',apis)"></td>'+
+    '<td><span class="cpill">'+esc(a.code)+'</span></td>'+
+    '<td>'+tbadge(a.type)+'</td>'+
     '<td><input type="number" value="'+(a.stock||0)+'" min="0" step="0.01" onchange="apis['+i+'].stock=+this.value;sv(\'apis\',apis)"></td>'+
-    '<td><input type="number" value="'+(a.bought||0)+'" min="0" step="0.01" onchange="apis['+i+'].bought=+this.value;sv(\'apis\',apis);updPgm(this,apis['+i+'])"></td>'+
-    '<td><input type="number" value="'+(a.price||0)+'" min="0" onchange="apis['+i+'].price=+this.value;sv(\'apis\',apis);updPgm(this,apis['+i+'])"></td>'+
-    '<td><span class="pgm-lbl pgm-c">'+pgm(a)+'</span></td>'+
+    '<td><input type="number" value="'+(a.bought||0)+'" min="0" step="0.01" onchange="apis['+i+'].bought=+this.value;sv(\'apis\',apis);upP(this,apis['+i+'])"></td>'+
+    '<td><input type="number" value="'+(a.price||0)+'" min="0" onchange="apis['+i+'].price=+this.value;sv(\'apis\',apis);upP(this,apis['+i+'])"></td>'+
+    '<td><span class="pgml pgc">'+pgm(a)+'</span></td>'+
     '<td><input type="date" value="'+(a.restock||'')+'" onchange="apis['+i+'].restock=this.value;sv(\'apis\',apis)"></td>'+
-    '<td><button class="btn-danger" onclick="delRow(\'apis\','+i+')">&#x2715;</button></td>'+
-    '</tr>'
-  )}).join('');
-}
+    '<td><button class="btn-x" onclick="delR(\'apis\','+i+')">&#x2715;</button></td></tr>'
+  )}).join('')}
 
 function renderBase(type){
   var arr=type==='cream'?cream:foam;
   document.getElementById(type+'-tbody').innerHTML=arr.map(function(a,i){return(
-    '<tr>'+
-    '<td><input type="text" value="'+esc(a.name)+'" onchange="'+type+'['+i+'].name=this.value;sv(\''+type+'\','+type+')"></td>'+
-    '<td><span class="code-pill">'+esc(a.code||'?')+'</span></td>'+
+    '<tr><td><input type="text" value="'+esc(a.name)+'" onchange="'+type+'['+i+'].name=this.value;sv(\''+type+'\','+type+')"></td>'+
+    '<td><span class="cpill">'+esc(a.code)+'</span></td>'+
     '<td><input type="number" value="'+(a.stock||0)+'" min="0" step="0.01" onchange="'+type+'['+i+'].stock=+this.value;sv(\''+type+'\','+type+')"></td>'+
-    '<td><input type="number" value="'+(a.bought||0)+'" min="0" step="0.01" onchange="'+type+'['+i+'].bought=+this.value;sv(\''+type+'\','+type+');updPgm(this,'+type+'['+i+'])"></td>'+
-    '<td><input type="number" value="'+(a.price||0)+'" min="0" onchange="'+type+'['+i+'].price=+this.value;sv(\''+type+'\','+type+');updPgm(this,'+type+'['+i+'])"></td>'+
-    '<td><span class="pgm-lbl pgm-c">'+pgm(a)+'</span></td>'+
+    '<td><input type="number" value="'+(a.bought||0)+'" min="0" step="0.01" onchange="'+type+'['+i+'].bought=+this.value;sv(\''+type+'\','+type+');upP(this,'+type+'['+i+'])"></td>'+
+    '<td><input type="number" value="'+(a.price||0)+'" min="0" onchange="'+type+'['+i+'].price=+this.value;sv(\''+type+'\','+type+');upP(this,'+type+'['+i+'])"></td>'+
+    '<td><span class="pgml pgc">'+pgm(a)+'</span></td>'+
     '<td><input type="number" value="'+(a.pct||0)+'" min="0" max="100" step="0.01" onchange="'+type+'['+i+'].pct=+this.value;sv(\''+type+'\','+type+')">%</td>'+
     '<td><input type="date" value="'+(a.restock||'')+'" onchange="'+type+'['+i+'].restock=this.value;sv(\''+type+'\','+type+')"></td>'+
-    '<td><button class="btn-danger" onclick="delRow(\''+type+'\','+i+')">&#x2715;</button></td>'+
-    '</tr>'
-  )}).join('');
-}
+    '<td><button class="btn-x" onclick="delR(\''+type+'\','+i+')">&#x2715;</button></td></tr>'
+  )}).join('')}
 
 function renderPkg(){
-  var n20=countLines('rx20'),n50=countLines('rx50'),nf=countLines('rxfoam');
+  var agg=aggRx();
+  var n20=cL(agg.rx20),n50=cL(agg.rx50),nf=cL(agg.rxfoam);
   document.getElementById('pkg-tbody').innerHTML=pkg.map(function(p,i){
-    var auto=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;
-    var rem=p.stock-auto-(p.adj||0);
-    return('<tr>'+
-      '<td>'+esc(p.name)+'</td>'+
-      '<td><input type="number" value="'+(p.stock||0)+'" min="0" onchange="pkg['+i+'].stock=+this.value;sv(\'pkg\',pkg);renderPkg();updateSummary()"></td>'+
-      '<td><input type="number" value="'+(p.price||0)+'" min="0" step="0.5" onchange="pkg['+i+'].price=+this.value;sv(\'pkg\',pkg);updateSummary()"></td>'+
-      '<td><span class="badge '+(p.kit==='20g'?'b-blue':p.kit==='50g'?'b-amber':'b-teal')+'">'+p.kit+'</span></td>'+
-      '<td style="text-align:center;color:var(--text2)">'+auto+'</td>'+
-      '<td><input type="number" value="'+(p.adj||0)+'" onchange="pkg['+i+'].adj=+this.value;sv(\'pkg\',pkg);renderPkg();updateSummary()"></td>'+
-      '<td style="font-weight:600">'+rem+' '+stockTag(rem,p.stock)+'</td>'+
-      '<td><input type="date" value="'+(p.restock||'')+'" onchange="pkg['+i+'].restock=this.value;sv(\'pkg\',pkg)"></td>'+
-      '<td><button class="btn-danger" onclick="delRow(\'pkg\','+i+')">&#x2715;</button></td>'+
-      '</tr>');
-  }).join('');
-}
-
-function updPgm(el,ing){var c=el.closest('tr').querySelector('.pgm-c');if(c)c.textContent=pgm(ing);}
-
-function delRow(type,i){
-  if(type==='apis'){apis.splice(i,1);sv('apis',apis);renderApis();}
-  else if(type==='cream'){cream.splice(i,1);sv('cream',cream);renderBase('cream');}
-  else if(type==='foam'){foam.splice(i,1);sv('foam',foam);renderBase('foam');}
-  else if(type==='pkg'){pkg.splice(i,1);sv('pkg',pkg);renderPkg();}
-}
-function addApiRow(){
-  apis.push({name:'New ingredient',code:genCode('NI',apis.map(function(a){return a.code})),type:'API',stock:0,bought:0,price:0,restock:''});
-  sv('apis',apis);renderApis();
-}
-function addBaseRow(type){
-  var arr=type==='cream'?cream:foam;
-  arr.push({name:'New ingredient',code:genCode('NI',arr.map(function(a){return a.code})),stock:0,bought:0,price:0,pct:0,restock:''});
-  sv(type,arr);renderBase(type);
-}
-function addPkgRow(){pkg.push({name:'New item',stock:0,price:0,kit:'20g',qtyPerKit:1,adj:0,restock:''});sv('pkg',pkg);renderPkg();}
-
-// ── report ────────────────────────────────────────────────────────
-function generateReport(){
-  var d=calcAll();
-
-  var today=new Date();
-  var firstDay=new Date(today.getFullYear(),today.getMonth(),1).toISOString().slice(0,10);
-  var lastDay=new Date(today.getFullYear(),today.getMonth()+1,0).toISOString().slice(0,10);
-  if(!document.getElementById('date-from').value) document.getElementById('date-from').value=firstDay;
-  if(!document.getElementById('date-to').value)   document.getElementById('date-to').value=lastDay;
-
-  document.getElementById('report-metrics').innerHTML=
-    '<div class="rmetric"><div class="rmetric-lbl">Total prescriptions</div><div class="rmetric-val">'+d.totalRx+'</div><div class="rmetric-sub">'+d.n20+'&times;20g &middot; '+d.n50+'&times;50g &middot; '+d.nF+'&times;foam(50ml)</div></div>'+
-    '<div class="rmetric"><div class="rmetric-lbl">Ingredient cost</div><div class="rmetric-val">'+fmtINR(d.totalIngCost)+'</div><div class="rmetric-sub">APIs + EXC + bases (auto-calc)</div></div>'+
-    '<div class="rmetric"><div class="rmetric-lbl">Packaging cost</div><div class="rmetric-val">'+fmtINR(d.totalPkgCost)+'</div><div class="rmetric-sub">all kits + wastage</div></div>'+
-    '<div class="rmetric rmetric-total"><div class="rmetric-lbl">Total COGS</div><div class="rmetric-val">'+fmtINR(d.grandTotal)+'</div></div>';
-
-  document.getElementById('rcard-breakdown').style.display='block';
-  document.getElementById('report-breakdown').innerHTML=
-    '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
-    '<tr><td>Ingredients (APIs + excipients + base)</td><td>&#8377;'+d.totalIngCost.toFixed(2)+'</td><td>'+pct(d.totalIngCost,d.grandTotal)+'%</td></tr>'+
-    '<tr><td>Packaging</td><td>&#8377;'+d.totalPkgCost.toFixed(2)+'</td><td>'+pct(d.totalPkgCost,d.grandTotal)+'%</td></tr>'+
-    '<tr class="report-total"><td>Total COGS</td><td>&#8377;'+d.grandTotal.toFixed(2)+'</td><td>100%</td></tr></tbody>';
-
-  // stock table — codes only
-  var apiRows=apis.map(function(a){
-    var usage=d.usageMap[a.code];
-    var used=usage?usage.grams:0;
-    var rem=a.stock-used;
-    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td>'+typeBadge(a.type)+'</td>'+
-      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
-      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
-  }).join('');
-
-  // cream base ingredient rows
-  var creamIngRows=cream.map(function(a){
-    var usage=d.creamIngUsage[a.code];
-    var used=usage?usage.grams:0;
-    var rem=a.stock-used;
-    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-blue" style="font-size:10px">CB</span></td>'+
-      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
-      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
-  }).join('');
-  var foamIngRows=foam.map(function(a){
-    var usage=d.foamIngUsage[a.code];
-    var used=usage?usage.grams:0;
-    var rem=a.stock-used;
-    return'<tr><td><span class="code-pill">'+a.code+'</span></td><td><span class="badge b-teal" style="font-size:10px">FB</span></td>'+
-      '<td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td>'+
-      '<td style="font-weight:600">'+rem.toFixed(2)+' '+stockTag(rem,a.stock)+'</td></tr>';
-  }).join('');
-
-  document.getElementById('rcard-stock').style.display='block';
-  document.getElementById('report-stock').innerHTML=
-    '<thead><tr><th style="width:80px">Code</th><th style="width:70px">Type</th>'+
-    '<th>Opening (g)</th><th>Used (g)</th><th>Remaining</th></tr></thead>'+
-    '<tbody>'+
-    '<tr class="group-hdr"><td colspan="5">APIs &amp; Excipients &amp; Bases</td></tr>'+apiRows+
-    '<tr class="group-hdr"><td colspan="5">Cream base ingredients (from '+d.creamProd+'g produced)</td></tr>'+creamIngRows+
-    '<tr class="group-hdr"><td colspan="5">Foam base ingredients (from '+d.foamProd+'g produced)</td></tr>'+foamIngRows+
-    '</tbody>';
-
-  var pkgRows=pkg.map(function(p){
-    var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
-    var used=auto+(p.adj||0),rem=p.stock-used;
+    var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;var rem=p.stock-au-(p.adj||0);
     return'<tr><td>'+esc(p.name)+'</td>'+
-      '<td><span class="badge '+(p.kit==='20g'?'b-blue':p.kit==='50g'?'b-amber':'b-teal')+'">'+p.kit+'</span></td>'+
-      '<td>'+p.stock+'</td><td>'+auto+'+'+( p.adj||0)+' waste</td>'+
-      '<td style="font-weight:600">'+rem+' '+stockTag(rem,p.stock)+'</td></tr>';
-  }).join('');
-  document.getElementById('rcard-pkg').style.display='block';
-  document.getElementById('report-pkg').innerHTML=
-    '<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Used+waste</th><th>Remaining</th></tr></thead>'+
-    '<tbody>'+pkgRows+'</tbody>';
-}
+      '<td><input type="number" value="'+(p.stock||0)+'" min="0" onchange="pkg['+i+'].stock=+this.value;sv(\'pkg\',pkg);renderPkg()"></td>'+
+      '<td><input type="number" value="'+(p.price||0)+'" min="0" step="0.5" onchange="pkg['+i+'].price=+this.value;sv(\'pkg\',pkg)"></td>'+
+      '<td><span class="badge '+(p.kit==='20g'?'b-n':p.kit==='50g'?'b-a':'b-t')+'">'+p.kit+'</span></td>'+
+      '<td style="text-align:center;color:var(--muted)">'+au+'</td>'+
+      '<td><input type="number" value="'+(p.adj||0)+'" onchange="pkg['+i+'].adj=+this.value;sv(\'pkg\',pkg);renderPkg()"></td>'+
+      '<td style="font-weight:600">'+rem+' '+stag(rem,p.stock)+'</td>'+
+      '<td><input type="date" value="'+(p.restock||'')+'" onchange="pkg['+i+'].restock=this.value;sv(\'pkg\',pkg)"></td>'+
+      '<td><button class="btn-x" onclick="delR(\'pkg\','+i+')">&#x2715;</button></td></tr>';
+  }).join('')}
 
-// cost breakdown helpers
-function apiOnlyCost(d){
-  var c=0;
-  Object.keys(d.usageMap).forEach(function(code){
-    var u=d.usageMap[code];
-    if(u.ing&&u.ing.type==='API') c+=u.cost;
-  });
-  return c;
-}
-function excCost(d){
-  var c=0;
-  Object.keys(d.usageMap).forEach(function(code){
-    var u=d.usageMap[code];
-    if(u.ing&&u.ing.type==='EXC') c+=u.cost;
-  });
-  return c;
-}
-function baseCostForCode(d,code){
-  var u=d.usageMap[code];
-  return u?u.cost:0;
-}
+function upP(el,a){var c=el.closest('tr').querySelector('.pgc');if(c)c.textContent=pgm(a)}
+function delR(type,i){if(type==='apis'){apis.splice(i,1);sv('apis',apis);renderApis()}else if(type==='cream'){cream.splice(i,1);sv('cream',cream);renderBase('cream')}else if(type==='foam'){foam.splice(i,1);sv('foam',foam);renderBase('foam')}else if(type==='pkg'){pkg.splice(i,1);sv('pkg',pkg);renderPkg()}}
+function addApiRow(){apis.push({name:'New ingredient',code:genCode('NI',apis.map(function(a){return a.code})),type:'API',stock:0,bought:0,price:0,restock:''});sv('apis',apis);renderApis()}
+function addBaseRow(t){var arr=t==='cream'?cream:foam;arr.push({name:'New ingredient',code:genCode('NI',arr.map(function(a){return a.code})),stock:0,bought:0,price:0,pct:0,restock:''});sv(t,arr);renderBase(t)}
+function addPkgRow(){pkg.push({name:'New item',stock:0,price:0,kit:'20g',adj:0,restock:''});sv('pkg',pkg);renderPkg()}
 
-// ── PDF helpers ───────────────────────────────────────────────────
-function dateRange(){
-  return(document.getElementById('date-from').value||'—')+' to '+(document.getElementById('date-to').value||'—');
-}
-function pdfHeader(doc,title){
-  doc.setFillColor(26,26,26);doc.rect(0,0,210,18,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Formial Labs',14,11);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(title,14,17);
-  doc.setTextColor(26,26,26);return 26;
-}
-function pdfFooter(doc,pg){
-  var h=doc.internal.pageSize.height;
-  doc.setDrawColor(220,220,214);doc.line(14,h-10,196,h-10);
-  doc.setFontSize(8);doc.setTextColor(150,150,150);
-  doc.text('Formial Labs \u2014 Confidential',14,h-5);
-  doc.text('Page '+pg,196,h-5,{align:'right'});
-}
-function autoTable(doc,y,headers,rows,colWidths){
-  var margin=14,rowH=7,headerH=8,pageH=doc.internal.pageSize.height-18;
-  doc.setFillColor(240,239,233);doc.rect(margin,y,182,headerH,'F');
-  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(100,100,100);
-  var x=margin+2;
-  headers.forEach(function(h,i){doc.text(String(h),x,y+5.5);x+=colWidths[i];});
-  y+=headerH;doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);
-  rows.forEach(function(row,ri){
-    if(y+rowH>pageH){doc.addPage();y=22;}
-    if(ri%2===0){doc.setFillColor(247,247,245);doc.rect(margin,y,182,rowH,'F');}
-    doc.setFontSize(8);x=margin+2;
-    row.forEach(function(cell,i){doc.text(String(cell||''),x,y+4.8,{maxWidth:colWidths[i]-3});x+=colWidths[i];});
-    y+=rowH;
-  });
-  return y+6;
-}
-
-function downloadSummaryPDF(){
-  var jsPDF=window.jspdf.jsPDF;
-  var doc=new jsPDF({unit:'mm',format:'a4'});
-  var d=calcAll();
-  var y=pdfHeader(doc,'Summary Report \u2014 '+dateRange());
-  doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('COGS Summary',14,y+7);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
-  doc.text('Period: '+dateRange(),14,y+13);doc.setTextColor(26,26,26);y+=20;
-
-  y=autoTable(doc,y,['Prescription type','Count'],[
-    ['20g cream',d.n20],['50g cream',d.n50],['Foam (50ml)',d.nF],['Total',d.totalRx]
-  ],[120,62]);
-
-  y=autoTable(doc,y,['Cost category','Amount (Rs)','% of COGS'],[
-    ['Ingredients (APIs + excipients + base)','Rs '+d.totalIngCost.toFixed(2),pct(d.totalIngCost,d.grandTotal)+'%'],
-    ['Packaging','Rs '+d.totalPkgCost.toFixed(2),pct(d.totalPkgCost,d.grandTotal)+'%'],
-    ['TOTAL COGS','Rs '+d.grandTotal.toFixed(2),'100%']
-  ],[100,50,32]);
-
-  pdfFooter(doc,1);
-  doc.save('Formial_Summary_'+dateRange().replace(/ /g,'_')+'.pdf');
-}
-
-function downloadDetailPDF(){
-  var jsPDF=window.jspdf.jsPDF;
-  var doc=new jsPDF({unit:'mm',format:'a4'});
-  var d=calcAll();var page=1;
-  var y=pdfHeader(doc,'Detailed Report \u2014 '+dateRange());
-  doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('Ingredient & Stock Report',14,y+7);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
-  doc.text('Period: '+dateRange()+'   |   Codes only \u2014 confidential',14,y+13);
-  doc.setTextColor(26,26,26);y+=20;
-
-  // deduction notes
-  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(120,120,120);
-  doc.text('Cream deductions: listed APIs + auto BHT/SMBS/EDTA(if Azelaic) + TCP stock-sol(Tret) + TCP or PG solvent + CB remainder',14,y);y+=5;
-  doc.text('Foam deductions: listed APIs only + FB remainder (50ml = 50g per prescription)',14,y);y+=8;
-  doc.setTextColor(26,26,26);doc.setFont('helvetica','normal');
-
-  var ingRows=apis.map(function(a){
-    var usage=d.usageMap[a.code];
-    var used=usage?usage.grams:0;
-    var cost=usage?usage.cost:0;
-    var rem=a.stock-used;
-    return[a.code,a.type,a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
-      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK',
-      'Rs '+cost.toFixed(2)];
-  });
-  var creamIngRowsPDF=cream.map(function(a){
-    var usage=d.creamIngUsage[a.code];
-    var used=usage?usage.grams:0;
-    var rem=a.stock-used;
-    return[a.code,'CB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
-      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','—'];
-  });
-  var foamIngRowsPDF=foam.map(function(a){
-    var usage=d.foamIngUsage[a.code];
-    var used=usage?usage.grams:0;
-    var rem=a.stock-used;
-    return[a.code,'FB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),
-      rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','—'];
-  });
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('APIs, Excipients & Bases',14,y);y+=4;
-  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],ingRows,[26,22,28,28,26,22,30]);
-  if(y>220){doc.addPage();page++;pdfFooter(doc,page);y=22;}
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Cream base ingredients ('+d.creamProd+'g produced)',14,y);y+=4;
-  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],creamIngRowsPDF,[26,22,28,28,26,22,30]);
-  if(y>220){doc.addPage();page++;pdfFooter(doc,page);y=22;}
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Foam base ingredients ('+d.foamProd+'g produced)',14,y);y+=4;
-  y=autoTable(doc,y,['Code','Type','Opening g','Used g','Remaining','Status','Cost'],foamIngRowsPDF,[26,22,28,28,26,22,30]);
-
-  if(y>230){doc.addPage();page++;pdfFooter(doc,page);y=22;}
-  var pkgRows2=pkg.map(function(p){
-    var auto=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nF;
-    var used=auto+(p.adj||0),rem=p.stock-used;
-    return[p.name,p.kit,String(p.stock),String(used),String(rem),rem<0?'DEFICIT':rem<p.stock*0.2&&p.stock>0?'Low':'OK'];
-  });
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Packaging',14,y);y+=4;
-  y=autoTable(doc,y,['Item','Kit','Opening','Used','Remaining','Status'],pkgRows2,[44,22,28,22,32,24]);
-
-  pdfFooter(doc,page);
-  doc.save('Formial_Detail_'+dateRange().replace(/ /g,'_')+'.pdf');
-}
-
-// ── prescription counters ─────────────────────────────────────────
-['rx20','rx50','rxfoam'].forEach(function(id){
+// daily upload
+['d20','d50','dfoam'].forEach(function(id){
   document.getElementById(id).addEventListener('input',function(){
-    var key=id.replace('rx','');
-    document.getElementById('count'+key).textContent=countLines(id)+' prescriptions';
-    updateSummary();
+    var k=id==='d20'?'20':id==='d50'?'50':'foam';
+    document.getElementById('cnt'+k).textContent=cL(this.value)+' prescriptions';
   });
 });
+function saveDailyEntry(){
+  var date=document.getElementById('daily-date').value;
+  if(!date){alert('Select a date first.');return}
+  var r20=document.getElementById('d20').value.trim(),r50=document.getElementById('d50').value.trim(),rfoam=document.getElementById('dfoam').value.trim();
+  if(!r20&&!r50&&!rfoam){if(dailyLog[date]){if(!confirm('Clear entry for '+date+'?'))return;delete dailyLog[date];}else{alert('Nothing to save.');return}}
+  else dailyLog[date]={rx20:r20,rx50:r50,rxfoam:rfoam};
+  sv('dlog',dailyLog);renderDayLog();
+  var msg=document.getElementById('save-msg');msg.textContent='Saved \u2713';setTimeout(function(){msg.textContent=''},2000);
+}
+function loadDay(date){
+  document.getElementById('daily-date').value=date;
+  var e=dailyLog[date]||{};
+  document.getElementById('d20').value=e.rx20||'';
+  document.getElementById('d50').value=e.rx50||'';
+  document.getElementById('dfoam').value=e.rxfoam||'';
+  document.getElementById('cnt20').textContent=cL(e.rx20||'')+' prescriptions';
+  document.getElementById('cnt50').textContent=cL(e.rx50||'')+' prescriptions';
+  document.getElementById('cntfoam').textContent=cL(e.rxfoam||'')+' prescriptions';
+  window.scrollTo(0,0);
+}
+function delDay(date){if(!confirm('Delete entry for '+date+'?'))return;delete dailyLog[date];sv('dlog',dailyLog);renderDayLog()}
+function clearAllDaily(){if(!confirm('Clear all daily entries?'))return;dailyLog={};sv('dlog',dailyLog);renderDayLog()}
+function renderDayLog(){
+  var dates=Object.keys(dailyLog).sort().reverse();var el=document.getElementById('day-log');
+  if(!dates.length){el.innerHTML='<p style="font-size:12px;color:var(--muted);padding:6px 0">No entries yet.</p>';return}
+  el.innerHTML=dates.map(function(date){
+    var e=dailyLog[date];var n20=cL(e.rx20||''),n50=cL(e.rx50||''),nf=cL(e.rxfoam||'');
+    var lines=[];[e.rx20,e.rx50,e.rxfoam].forEach(function(txt){if(txt)txt.split('\n').filter(Boolean).forEach(function(l){lines.push(l)})});
+    var prev=lines.slice(0,4).map(esc).join('\n')+(lines.length>4?'\n\u2026+'+(lines.length-4)+' more':'');
+    return'<div class="de"><div class="de-hdr"><span class="de-date">'+date+'</span>'+
+      '<div style="display:flex;gap:7px;align-items:center">'+
+      (n20?'<span class="badge b-n">'+n20+'\u00d720g</span>':'')+
+      (n50?'<span class="badge b-a">'+n50+'\u00d750g</span>':'')+
+      (nf?'<span class="badge b-t">'+nf+'\u00d7foam</span>':'')+
+      '<button class="btn btn-sm" onclick="loadDay(\''+date+'\')">Edit</button>'+
+      '<button class="btn-x" onclick="delDay(\''+date+'\')">&#x2715;</button></div></div>'+
+      '<div class="de-rx">'+prev+'</div></div>';
+  }).join('');
+}
 
+// manual usage
+function buildIngOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+apis.map(function(a){return'<option value="'+esc(a.code)+'"'+(a.code===sel?' selected':'')+'>'+esc(a.name)+' ('+esc(a.code)+')</option>'}).join('')}
+function addManualRow(){manualUsage.push({ingCode:'',ingName:'',grams:0,date:new Date().toISOString().slice(0,10),reason:''});sv('muse',manualUsage);renderManual()}
+function delManualRow(i){manualUsage.splice(i,1);sv('muse',manualUsage);renderManual()}
+function renderManual(){
+  document.getElementById('man-tbody').innerHTML=manualUsage.map(function(e,i){return(
+    '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
+    '<td><select onchange="manualUsage['+i+'].ingCode=this.value;manualUsage['+i+'].ingName=this.options[this.selectedIndex].text;sv(\'muse\',manualUsage)">'+buildIngOpts(e.ingCode)+'</select></td>'+
+    '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manualUsage['+i+'].grams=+this.value;sv(\'muse\',manualUsage)"></td>'+
+    '<td><input type="date" value="'+(e.date||'')+'" onchange="manualUsage['+i+'].date=this.value;sv(\'muse\',manualUsage)"></td>'+
+    '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="research batch, stability test\u2026" onchange="manualUsage['+i+'].reason=this.value;sv(\'muse\',manualUsage)"></td>'+
+    '<td><button class="btn-x" onclick="delManualRow('+i+')">&#x2715;</button></td></tr>'
+  )}).join('')}
+
+// report
+function generateReport(){
+  var today=new Date();
+  var f=new Date(today.getFullYear(),today.getMonth(),1).toISOString().slice(0,10);
+  var t=new Date(today.getFullYear(),today.getMonth()+1,0).toISOString().slice(0,10);
+  if(!document.getElementById('date-from').value)document.getElementById('date-from').value=f;
+  if(!document.getElementById('date-to').value)document.getElementById('date-to').value=t;
+  var from=document.getElementById('date-from').value;
+  var to=document.getElementById('date-to').value;
+
+  // filter daily log to selected range
+  var filteredDates=Object.keys(dailyLog).filter(function(d){return(!from||d>=from)&&(!to||d<=to)}).sort();
+
+  var d=calcAll(from,to);
+
+  document.getElementById('rbar').innerHTML=
+    '<div class="rm"><div class="rm-lbl">Prescriptions</div><div class="rm-val">'+d.tot+'</div><div class="rm-sub">'+d.n20+'\u00d720g \u00b7 '+d.n50+'\u00d750g \u00b7 '+d.nf+'\u00d7foam<br>'+filteredDates.length+' days in range</div></div>'+
+    '<div class="rm"><div class="rm-lbl">Ingredient cost</div><div class="rm-val">'+fINR(d.ingCost)+'</div><div class="rm-sub">incl. manual usage</div></div>'+
+    '<div class="rm"><div class="rm-lbl">Packaging cost</div><div class="rm-val">'+fINR(d.pkgCost)+'</div></div>'+
+    '<div class="rm rm-tot"><div class="rm-lbl">Total COGS</div><div class="rm-val">'+fINR(d.grand)+'</div>'+(d.tot>0?'<div class="rm-sub">'+fINR(d.grand/d.tot)+'/Rx</div>':'')+'</div>';
+
+  show('rc-cost');
+  document.getElementById('t-cost').innerHTML=
+    '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
+    '<tr><td>Rx ingredient cost</td><td>'+fINR(d.ingCost-d.manCost)+'</td><td>'+pct(d.ingCost-d.manCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Manual / research usage</td><td>'+fINR(d.manCost)+'</td><td>'+pct(d.manCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Packaging</td><td>'+fINR(d.pkgCost)+'</td><td>'+pct(d.pkgCost,d.grand)+'%</td></tr>'+
+    '<tr class="rtot"><td>Total COGS</td><td>'+fINR(d.grand)+'</td><td>100%</td></tr></tbody>';
+
+  // manual detail — use filteredManual from calcAll (already date-filtered)
+  if(d.filteredManual.length){
+    show('rc-man');
+    var mrows=d.filteredManual.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">'+esc(e.ingCode||'\u2014')+'</span></td><td>'+esc(e.ingName||'')+'</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
+    document.getElementById('t-man').innerHTML='<thead><tr><th>Date</th><th>Code</th><th>Ingredient</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+mrows+'<tr class="rtot"><td colspan="4">Total</td><td>'+fINR(d.manCost)+'</td><td></td></tr></tbody>';
+  }else hide('rc-man');
+
+  // daily log — show only dates in range
+  if(filteredDates.length){
+    show('rc-daily');
+    var drows=filteredDates.map(function(dt){var e=dailyLog[dt];var n20=cL(e.rx20||''),n50=cL(e.rx50||''),nf=cL(e.rxfoam||'');return'<tr><td>'+esc(dt)+'</td><td>'+n20+'</td><td>'+n50+'</td><td>'+nf+'</td><td style="font-weight:600">'+(n20+n50+nf)+'</td></tr>'}).join('');
+    var t20=filteredDates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx20||'')},0);
+    var t50=filteredDates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx50||'')},0);
+    var tf=filteredDates.reduce(function(s,dt){return s+cL(dailyLog[dt].rxfoam||'')},0);
+    document.getElementById('t-daily').innerHTML='<thead><tr><th>Date</th><th>20g</th><th>50g</th><th>Foam</th><th>Day total</th></tr></thead><tbody>'+drows+'<tr class="rtot"><td>Total ('+filteredDates.length+' days)</td><td>'+t20+'</td><td>'+t50+'</td><td>'+tf+'</td><td>'+(t20+t50+tf)+'</td></tr></tbody>';
+  }else hide('rc-daily');
+
+  show('rc-stock');
+  var aR=apis.map(function(a){var u=d.usageMap[a.code];var used=u?u.grams:0;var cost=u?u.cost:0;var rem=a.stock-used;return'<tr><td><span class="cpill">'+a.code+'</span></td><td>'+tbadge(a.type)+'</td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stag(rem,a.stock)+'</td><td>'+fINR(cost)+'</td></tr>'}).join('');
+  var cR=cream.map(function(a){var u=d.cIngU[a.code];var used=u?u.grams:0;var rem=a.stock-used;return'<tr><td><span class="cpill">'+a.code+'</span></td><td><span class="badge b-n" style="font-size:10px">CB</span></td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stag(rem,a.stock)+'</td><td>\u2014</td></tr>'}).join('');
+  var fR=foam.map(function(a){var u=d.fIngU[a.code];var used=u?u.grams:0;var rem=a.stock-used;return'<tr><td><span class="cpill">'+a.code+'</span></td><td><span class="badge b-t" style="font-size:10px">FB</span></td><td>'+a.stock.toFixed(2)+'</td><td>'+used.toFixed(3)+'</td><td style="font-weight:600">'+rem.toFixed(2)+' '+stag(rem,a.stock)+'</td><td>\u2014</td></tr>'}).join('');
+  document.getElementById('t-stock').innerHTML='<thead><tr><th style="width:70px">Code</th><th style="width:65px">Type</th><th>Opening (g)</th><th>Used (g)</th><th>Remaining</th><th>Cost (&#8377;)</th></tr></thead><tbody><tr class="ghdr"><td colspan="6">APIs, Excipients &amp; Bases</td></tr>'+aR+'<tr class="ghdr"><td colspan="6">Cream base ingredients ('+d.cProd+'g produced)</td></tr>'+cR+'<tr class="ghdr"><td colspan="6">Foam base ingredients ('+d.fProd+'g produced)</td></tr>'+fR+'</tbody>';
+
+  show('rc-pkg');
+  var pkR=pkg.map(function(p){var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;var used=au+(p.adj||0),rem=p.stock-used;return'<tr><td>'+esc(p.name)+'</td><td><span class="badge '+(p.kit==='20g'?'b-n':p.kit==='50g'?'b-a':'b-t')+'">'+p.kit+'</span></td><td>'+p.stock+'</td><td>'+au+'+'+(p.adj||0)+'</td><td style="font-weight:600">'+rem+' '+stag(rem,p.stock)+'</td><td>'+fINR(used*p.price)+'</td></tr>'}).join('');
+  document.getElementById('t-pkg').innerHTML='<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Used+waste</th><th>Remaining</th><th>Cost (&#8377;)</th></tr></thead><tbody>'+pkR+'</tbody>';
+}
+
+// PDF
+var LB="data:image/png;base64,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";
+function drng(){return(document.getElementById('date-from').value||'\u2014')+' to '+(document.getElementById('date-to').value||'\u2014')}
+function pH(doc,title){
+  doc.setFillColor(5,70,96);doc.rect(0,0,210,24,'F');
+  doc.setFillColor(191,230,255);doc.rect(0,23,210,2,'F');
+  try{doc.addImage(LB,'PNG',10,3,18,18)}catch(e){}
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('FORMIAL LABS PHARMACY',32,11);
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(191,230,255);
+  doc.text('No. 181, K.B.A.R Road, Austin Town, Bengaluru - 560047  |  Tel: 6363991580  |  formial.in',32,17);
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(191,230,255);doc.text(title,196,11,{align:'right'});
+  doc.setTextColor(26,26,26);return 32;
+}
+function pF(doc,pg){var h=doc.internal.pageSize.height;doc.setFillColor(5,70,96);doc.rect(0,h-14,210,14,'F');doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(191,230,255);doc.text('Formial Labs Pharmacy  \u2022  Bengaluru',14,h-5);doc.text('formial.in',105,h-5,{align:'center'});doc.text('Page '+pg,196,h-5,{align:'right'})}
+function aTbl(doc,y,hds,rows,cw){
+  var m=14,rh=7,hh=8,ph=doc.internal.pageSize.height-18;
+  doc.setFillColor(5,70,96);doc.rect(m,y,182,hh,'F');doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  var x=m+2;hds.forEach(function(h,i){doc.text(String(h),x,y+5.5);x+=cw[i]});
+  y+=hh;doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);
+  rows.forEach(function(row,ri){
+    if(y+rh>ph){doc.addPage();y=36}
+    doc.setFillColor(ri%2===0?[232,244,251]:[255,255,255]);doc.rect(m,y,182,rh,'F');
+    doc.setFontSize(8);x=m+2;row.forEach(function(cell,i){doc.text(String(cell||''),x,y+4.8,{maxWidth:cw[i]-3});x+=cw[i]});y+=rh;
+  });
+  doc.setDrawColor(191,230,255);doc.line(m,y,m+182,y);return y+6;
+}
+function dlSummary(){
+  var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({unit:'mm',format:'a4'});
+  var from=document.getElementById('date-from').value;var to=document.getElementById('date-to').value;
+  var d=calcAll(from,to);var y=pH(doc,'Summary Report');
+  doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(5,70,96);doc.text('COGS Summary',14,y+7);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);doc.text('Period: '+drng(),14,y+13);y+=20;
+  y=aTbl(doc,y,['Type','Count'],[['20g cream',d.n20],['50g cream',d.n50],['Foam 50ml',d.nf],['Total',d.tot]],[140,42]);
+  y=aTbl(doc,y,['Category','Amount (Rs)','%'],[['Rx ingredient cost','Rs '+(d.ingCost-d.manCost).toFixed(2),pct(d.ingCost-d.manCost,d.grand)+'%'],['Manual / research usage','Rs '+d.manCost.toFixed(2),pct(d.manCost,d.grand)+'%'],['Packaging','Rs '+d.pkgCost.toFixed(2),pct(d.pkgCost,d.grand)+'%'],['TOTAL COGS','Rs '+d.grand.toFixed(2),'100%']],[105,50,27]);
+  if(d.filteredManual.length){var mr=d.filteredManual.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return[e.date||'',e.ingCode||'',((e.grams||0).toFixed(2))+'g','Rs '+c.toFixed(2),e.reason||'']});y=aTbl(doc,y,['Date','Code','Grams','Cost','Reason'],mr,[28,22,22,30,80])}
+  pF(doc,1);doc.save('Formial_COGS_Summary_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+function dlDetail(){
+  var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({unit:'mm',format:'a4'});
+  var from=document.getElementById('date-from').value;var to=document.getElementById('date-to').value;
+  var d=calcAll(from,to);var pg=1;var y=pH(doc,'Detailed Report');
+  doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(5,70,96);doc.text('Ingredient & Stock Report',14,y+7);
+  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(120,120,120);doc.text('Period: '+drng()+'   |   Codes only',14,y+13);y+=20;
+  var dates=Object.keys(dailyLog).filter(function(dt){return(!from||dt>=from)&&(!to||dt<=to)}).sort();
+  if(dates.length){
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('Daily Prescription Log',14,y);y+=4;
+    var drows=dates.map(function(dt){var e=dailyLog[dt];var n20=cL(e.rx20||''),n50=cL(e.rx50||''),nf=cL(e.rxfoam||'');return[dt,String(n20),String(n50),String(nf),String(n20+n50+nf)]});
+    var t20=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx20||'')},0),t50=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx50||'')},0),tf=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rxfoam||'')},0);
+    drows.push(['TOTAL ('+dates.length+' days)',String(t20),String(t50),String(tf),String(t20+t50+tf)]);
+    y=aTbl(doc,y,['Date','20g','50g','Foam','Total'],[50,30,30,30,42],drows);
+    if(y>220){doc.addPage();pg++;pF(doc,pg);y=36}
+  }
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('APIs, Excipients & Bases',14,y);y+=4;
+  var aR=apis.map(function(a){var u=d.usageMap[a.code];var used=u?u.grams:0;var c=u?u.cost:0;var rem=a.stock-used;return[a.code,a.type,a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','Rs '+c.toFixed(2)]});
+  y=aTbl(doc,y,['Code','Type','Opening','Used','Remaining','Status','Cost'],aR,[26,22,28,28,28,22,28]);
+  if(y>220){doc.addPage();pg++;pF(doc,pg);y=36}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('Cream Base Ingredients ('+d.cProd+'g produced)',14,y);y+=4;
+  var cR2=cream.map(function(a){var u=d.cIngU[a.code];var used=u?u.grams:0;var rem=a.stock-used;return[a.code,'CB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','--']});
+  y=aTbl(doc,y,['Code','Type','Opening','Used','Remaining','Status','Cost'],cR2,[26,22,28,28,28,22,28]);
+  if(y>220){doc.addPage();pg++;pF(doc,pg);y=36}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('Foam Base Ingredients ('+d.fProd+'g produced)',14,y);y+=4;
+  var fR2=foam.map(function(a){var u=d.fIngU[a.code];var used=u?u.grams:0;var rem=a.stock-used;return[a.code,'FB',a.stock.toFixed(2),used.toFixed(3),rem.toFixed(2),rem<0?'DEFICIT':rem<a.stock*0.15&&a.stock>0?'Low':'OK','--']});
+  y=aTbl(doc,y,['Code','Type','Opening','Used','Remaining','Status','Cost'],fR2,[26,22,28,28,28,22,28]);
+  if(y>230){doc.addPage();pg++;pF(doc,pg);y=36}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('Packaging',14,y);y+=4;
+  var pkR=pkg.map(function(p){var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;var used=au+(p.adj||0),rem=p.stock-used;return[p.name,p.kit,String(p.stock),String(used),String(rem),rem<0?'DEFICIT':rem<p.stock*0.2&&p.stock>0?'Low':'OK']});
+  y=aTbl(doc,y,['Item','Kit','Opening','Used','Remaining','Status'],pkR,[44,22,28,22,32,34]);
+  pF(doc,pg);doc.save('Formial_COGS_Detail_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+
+// init
 (function(){
   var today=new Date();
+  document.getElementById('daily-date').value=today.toISOString().slice(0,10);
   document.getElementById('date-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().slice(0,10);
   document.getElementById('date-to').value=new Date(today.getFullYear(),today.getMonth()+1,0).toISOString().slice(0,10);
+  var cp=lv('cprod',0),fp=lv('fprod',0);
+  if(cp)document.getElementById('cream-prod').value=cp;
+  if(fp)document.getElementById('foam-prod').value=fp;
+  if(!apis.some(function(a){return a.code==='CB'}))apis.push({name:'Cream Base',code:'CB',type:'BASE',stock:0,bought:0,price:0,restock:''});
+  if(!apis.some(function(a){return a.code==='FB'}))apis.push({name:'Foam Base',code:'FB',type:'BASE',stock:0,bought:0,price:0,restock:''});
+  sv('apis',apis);
+  renderApis();renderBase('cream');renderBase('foam');renderPkg();
+  renderDayLog();renderManual();
 })();
-
-// ensure CB and FB always exist in apis
-(function(){
-  var hasCB = apis.some(function(a){return a.code==='CB'});
-  var hasFB = apis.some(function(a){return a.code==='FB'});
-  if(!hasCB) apis.push({name:'Cream Base',code:'CB',type:'BASE',stock:0,bought:0,price:0,restock:''});
-  if(!hasFB) apis.push({name:'Foam Base', code:'FB',type:'BASE',stock:0,bought:0,price:0,restock:''});
-  if(!hasCB||!hasFB) sv('apis',apis);
-})();
-renderApis();renderBase('cream');renderBase('foam');renderPkg();updateSummary();
 </script>
 </body>
 </html>
