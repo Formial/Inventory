@@ -148,19 +148,15 @@ textarea:focus{border-color:var(--navy)}
 
 <!-- MANUAL USAGE -->
 <div id="page-manual" class="page">
-  <!-- tab strip -->
   <div style="display:flex;gap:4px;margin-bottom:14px">
     <button class="nb active" style="background:#fff;color:var(--navy);font-weight:700;border:1px solid var(--border)" onclick="showManTab('api',this)">APIs / Excipients / Bases</button>
-    <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('cb',this)">Cream Base waste</button>
-    <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('fb',this)">Foam Base waste</button>
     <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('pkg',this)">Packaging waste</button>
   </div>
 
-  <!-- API entries -->
   <div id="man-tab-api" class="man-tab">
     <div class="card">
       <div class="ct">APIs, Excipients &amp; Base usage</div>
-      <div class="info">Research batches, failed batches, stability tests, samples — any ingredient used outside normal Rx. Select ingredient, enter grams and a reason. Cost shown only in Report.</div>
+      <div class="info">Any ingredient used outside normal Rx — research batches, failed batches, stability tests, CB/FB waste, samples. Select ingredient (includes CB and FB), enter grams and a reason. Cost shown only in Report.</div>
       <div class="tw">
         <table>
           <thead><tr>
@@ -178,53 +174,10 @@ textarea:focus{border-color:var(--navy)}
     </div>
   </div>
 
-  <!-- CB waste -->
-  <div id="man-tab-cb" class="man-tab" style="display:none">
-    <div class="card">
-      <div class="ct">Cream Base waste / extra production</div>
-      <div class="info">Cream base batches that were discarded, failed QC, or used for testing. Enter grams wasted — deducted from CB stock and costed at CB &#8377;/g in the Report.</div>
-      <div class="tw">
-        <table>
-          <thead><tr>
-            <th style="width:28px">#</th>
-            <th style="width:110px">Grams wasted (g)</th>
-            <th style="width:115px">Date</th>
-            <th>Reason / note</th>
-            <th style="width:28px"></th>
-          </tr></thead>
-          <tbody id="man-cb-tbody"></tbody>
-        </table>
-      </div>
-      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('cb')">+ Add entry</button></div>
-    </div>
-  </div>
-
-  <!-- FB waste -->
-  <div id="man-tab-fb" class="man-tab" style="display:none">
-    <div class="card">
-      <div class="ct">Foam Base waste / extra production</div>
-      <div class="info">Foam base batches discarded or used for testing. Enter grams wasted — costed at FB &#8377;/g in the Report.</div>
-      <div class="tw">
-        <table>
-          <thead><tr>
-            <th style="width:28px">#</th>
-            <th style="width:110px">Grams wasted (g)</th>
-            <th style="width:115px">Date</th>
-            <th>Reason / note</th>
-            <th style="width:28px"></th>
-          </tr></thead>
-          <tbody id="man-fb-tbody"></tbody>
-        </table>
-      </div>
-      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('fb')">+ Add entry</button></div>
-    </div>
-  </div>
-
-  <!-- Packaging waste -->
   <div id="man-tab-pkg" class="man-tab" style="display:none">
     <div class="card">
       <div class="ct">Packaging waste / extra used</div>
-      <div class="info">Damaged, misprinted, or extra packaging items used outside normal Rx fulfilment. Select item, enter quantity wasted and a reason. Costed at that item's unit price in the Report.</div>
+      <div class="info">Damaged, misprinted, or extra packaging items used outside normal Rx fulfilment. Select item, enter quantity and a reason. Costed at that item's unit price in the Report.</div>
       <div class="tw">
         <table>
           <thead><tr>
@@ -450,8 +403,6 @@ var apis=lv('apis',DA),cream=lv('cream',DC),foam=lv('foam',DF),pkg=lv('pkg',DP);
 var dailyLog=lv('dlog',{});
 // manual usage split by type
 var manApi=lv('mapi',[]);   // [{ingCode,ingName,grams,date,reason}]
-var manCb =lv('mcb', []);   // [{grams,date,reason}]
-var manFb =lv('mfb', []);   // [{grams,date,reason}]
 var manPkg=lv('mpkg',[]);   // [{pkgName,qty,date,reason}]
 
 // nav
@@ -528,22 +479,12 @@ function calcAll(from,to){
   resolved.forEach(function(r){var c=r.ing?cpg(r.ing)*r.grams:0;ingCost+=c;var code=r.ing?r.ing.code:r.key;if(!usageMap[code])usageMap[code]={grams:0,cost:0,ing:r.ing};usageMap[code].grams+=r.grams;usageMap[code].cost+=c});
   // manual API usage — filter by date range
   var fManApi=manApi.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
-  var fManCb =manCb.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
-  var fManFb =manFb.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
   var fManPkg=manPkg.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
 
   var manApiCost=0,manApiByCode={};
   fManApi.forEach(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);manApiCost+=c;if(!manApiByCode[e.ingCode])manApiByCode[e.ingCode]={grams:0,cost:0,name:e.ingName};manApiByCode[e.ingCode].grams+=e.grams||0;manApiByCode[e.ingCode].cost+=c});
 
-  // CB waste cost: grams × CB ₹/g
-  var cbIng=apis.find(function(a){return a.code==='CB'});
-  var manCbCost=fManCb.reduce(function(s,e){return s+cpg(cbIng)*(e.grams||0)},0);
-
-  // FB waste cost: grams × FB ₹/g
-  var fbIng=apis.find(function(a){return a.code==='FB'});
-  var manFbCost=fManFb.reduce(function(s,e){return s+cpg(fbIng)*(e.grams||0)},0);
-
-  var manCost=manApiCost+manCbCost+manFbCost;
+  var manCost=manApiCost;
   ingCost+=manCost;
 
   var cp=+(lv('cprod',0)),fp=+(lv('fprod',0));
@@ -560,7 +501,7 @@ function calcAll(from,to){
     pkgCost+=(au+waste)*p.price;
     pkgWasteCost+=waste*p.price;
   });
-  return{n20:n20,n50:n50,nf:nf,tot:tot,usageMap:usageMap,ingCost:ingCost,cProd:cp,fProd:fp,cIngU:cIngU,fIngU:fIngU,pkgCost:pkgCost,pkgWasteCost:pkgWasteCost,pkgWasteMap:pkgWasteMap,manCost:manCost,manApiCost:manApiCost,manCbCost:manCbCost,manFbCost:manFbCost,manApiByCode:manApiByCode,fManApi:fManApi,fManCb:fManCb,fManFb:fManFb,fManPkg:fManPkg,grand:ingCost+pkgCost};
+  return{n20:n20,n50:n50,nf:nf,tot:tot,usageMap:usageMap,ingCost:ingCost,cProd:cp,fProd:fp,cIngU:cIngU,fIngU:fIngU,pkgCost:pkgCost,pkgWasteCost:pkgWasteCost,pkgWasteMap:pkgWasteMap,manCost:manCost,manApiCost:manApiCost,manApiByCode:manApiByCode,fManApi:fManApi,fManPkg:fManPkg,grand:ingCost+pkgCost};
 }
 
 // render stock tables
@@ -664,31 +605,23 @@ function renderDayLog(){
   }).join('');
 }
 
-// manual usage — split tabs
+// manual usage — 2 tabs: api and pkg
 function showManTab(id,btn){
   document.querySelectorAll('.man-tab').forEach(function(t){t.style.display='none'});
   document.getElementById('man-tab-'+id).style.display='block';
-  document.querySelectorAll('#page-manual .nb').forEach(function(b){b.classList.remove('active');b.style.background='transparent';b.style.color='rgba(191,230,255,.75)'});
+  document.querySelectorAll('#page-manual .nb').forEach(function(b){b.classList.remove('active');b.style.background='transparent';b.style.color='rgba(5,70,96,.6)'});
   btn.classList.add('active');btn.style.background='#fff';btn.style.color='var(--navy)';
 }
-function buildIngOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+apis.map(function(a){return'<option value="'+esc(a.code)+'"'+(a.code===sel?' selected':'')+'>'+esc(a.name)+' ('+esc(a.code)+')</option>'}).join('')}
-function buildPkgOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+pkg.map(function(p){return'<option value="'+esc(p.name)+'"'+(p.name===sel?' selected':'')+'>'+esc(p.name)+' ('+esc(p.kit)+')</option>'}).join('')}
-
-// manual usage
 function buildIngOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+apis.map(function(a){return'<option value="'+esc(a.code)+'"'+(a.code===sel?' selected':'')+'>'+esc(a.name)+' ('+esc(a.code)+')</option>'}).join('')}
 function buildPkgOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+pkg.map(function(p){return'<option value="'+esc(p.name)+'"'+(p.name===sel?' selected':'')+'>'+esc(p.name)+' ('+esc(p.kit)+')</option>'}).join('')}
 
 function addManRow(type){
   var today=new Date().toISOString().slice(0,10);
   if(type==='api'){manApi.push({ingCode:'',ingName:'',grams:0,date:today,reason:''});sv('mapi',manApi);renderManual('api')}
-  else if(type==='cb'){manCb.push({grams:0,date:today,reason:''});sv('mcb',manCb);renderManual('cb')}
-  else if(type==='fb'){manFb.push({grams:0,date:today,reason:''});sv('mfb',manFb);renderManual('fb')}
   else if(type==='pkg'){manPkg.push({pkgName:'',qty:0,date:today,reason:''});sv('mpkg',manPkg);renderManual('pkg')}
 }
 function delManRow(type,i){
   if(type==='api'){manApi.splice(i,1);sv('mapi',manApi);renderManual('api')}
-  else if(type==='cb'){manCb.splice(i,1);sv('mcb',manCb);renderManual('cb')}
-  else if(type==='fb'){manFb.splice(i,1);sv('mfb',manFb);renderManual('fb')}
   else if(type==='pkg'){manPkg.splice(i,1);sv('mpkg',manPkg);renderManual('pkg')}
 }
 function renderManual(type){
@@ -698,24 +631,8 @@ function renderManual(type){
       '<td><select onchange="manApi['+i+'].ingCode=this.value;manApi['+i+'].ingName=this.options[this.selectedIndex].text;sv(\'mapi\',manApi)">'+buildIngOpts(e.ingCode)+'</select></td>'+
       '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manApi['+i+'].grams=+this.value;sv(\'mapi\',manApi)"></td>'+
       '<td><input type="date" value="'+(e.date||'')+'" onchange="manApi['+i+'].date=this.value;sv(\'mapi\',manApi)"></td>'+
-      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="research, stability test\u2026" onchange="manApi['+i+'].reason=this.value;sv(\'mapi\',manApi)"></td>'+
+      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="research, CB waste, stability test\u2026" onchange="manApi['+i+'].reason=this.value;sv(\'mapi\',manApi)"></td>'+
       '<td><button class="btn-x" onclick="delManRow(\'api\','+i+')">&#x2715;</button></td></tr>'
-    )}).join('')}
-  if(!type||type==='cb'){
-    document.getElementById('man-cb-tbody').innerHTML=manCb.map(function(e,i){return(
-      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
-      '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manCb['+i+'].grams=+this.value;sv(\'mcb\',manCb)"></td>'+
-      '<td><input type="date" value="'+(e.date||'')+'" onchange="manCb['+i+'].date=this.value;sv(\'mcb\',manCb)"></td>'+
-      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="failed batch, QC reject\u2026" onchange="manCb['+i+'].reason=this.value;sv(\'mcb\',manCb)"></td>'+
-      '<td><button class="btn-x" onclick="delManRow(\'cb\','+i+')">&#x2715;</button></td></tr>'
-    )}).join('')}
-  if(!type||type==='fb'){
-    document.getElementById('man-fb-tbody').innerHTML=manFb.map(function(e,i){return(
-      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
-      '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manFb['+i+'].grams=+this.value;sv(\'mfb\',manFb)"></td>'+
-      '<td><input type="date" value="'+(e.date||'')+'" onchange="manFb['+i+'].date=this.value;sv(\'mfb\',manFb)"></td>'+
-      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="failed batch, QC reject\u2026" onchange="manFb['+i+'].reason=this.value;sv(\'mfb\',manFb)"></td>'+
-      '<td><button class="btn-x" onclick="delManRow(\'fb\','+i+')">&#x2715;</button></td></tr>'
     )}).join('')}
   if(!type||type==='pkg'){
     document.getElementById('man-pkg-tbody').innerHTML=manPkg.map(function(e,i){return(
@@ -753,19 +670,13 @@ function closeMonth(){
     if(a){a.stock=Math.round((+(a.stock||0)-(+d.fIngU[code].grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
   });
 
-  // 3. Deduct manual API entries
+  // 3. Deduct manual API/CB/FB entries (all go through manApi now)
   d.fManApi.forEach(function(e){
     var a=apis.find(function(x){return x.code===e.ingCode});
     if(a){a.stock=Math.round((+(a.stock||0)-(+e.grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
   });
 
-  // 4. Deduct CB/FB waste
-  var cbIng=apis.find(function(x){return x.code==='CB'});
-  if(cbIng){var cbWaste=d.fManCb.reduce(function(s,e){return s+(+e.grams||0)},0);cbIng.stock=Math.round((+(cbIng.stock||0)-cbWaste)*1000)/1000;if(cbIng.stock<0)cbIng.stock=0}
-  var fbIng=apis.find(function(x){return x.code==='FB'});
-  if(fbIng){var fbWaste=d.fManFb.reduce(function(s,e){return s+(+e.grams||0)},0);fbIng.stock=Math.round((+(fbIng.stock||0)-fbWaste)*1000)/1000;if(fbIng.stock<0)fbIng.stock=0}
-
-  // 5. Deduct packaging (Rx auto-used + manual waste)
+  // 4. Deduct packaging (Rx auto-used + manual waste)
   pkg.forEach(function(p){
     var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;
     var waste=d.pkgWasteMap[p.name]||0;
@@ -778,10 +689,8 @@ function closeMonth(){
   // 7. Clear daily entries and manual usage for the period
   Object.keys(dailyLog).forEach(function(dt){if((!from||dt>=from)&&(!to||dt<=to))delete dailyLog[dt]});
   manApi=manApi.filter(function(e){return e.date&&(e.date<from||e.date>to)});
-  manCb =manCb.filter(function(e){return e.date&&(e.date<from||e.date>to)});
-  manFb =manFb.filter(function(e){return e.date&&(e.date<from||e.date>to)});
   manPkg=manPkg.filter(function(e){return e.date&&(e.date<from||e.date>to)});
-  sv('dlog',dailyLog);sv('mapi',manApi);sv('mcb',manCb);sv('mfb',manFb);sv('mpkg',manPkg);
+  sv('dlog',dailyLog);sv('mapi',manApi);sv('mpkg',manPkg);
 
   // 8. Reset base production for the period
   sv('cprod',0);sv('fprod',0);
@@ -790,8 +699,7 @@ function closeMonth(){
 
   // 9. Re-render everything
   renderApis();renderBase('cream');renderBase('foam');renderPkg();
-  renderDayLog();renderManual();
-  generateReport();
+  renderDayLog();renderManual();generateReport();
 
   var msg=document.getElementById('close-msg');
   msg.textContent='Month closed \u2713 — stock updated, period cleared';
@@ -823,33 +731,19 @@ function generateReport(){
   document.getElementById('t-cost').innerHTML=
     '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
     '<tr><td>Rx ingredient cost</td><td>'+fINR(d.ingCost-d.manCost)+'</td><td>'+pct(d.ingCost-d.manCost,d.grand)+'%</td></tr>'+
-    '<tr><td>Manual / research (APIs &amp; bases)</td><td>'+fINR(d.manApiCost+d.manCbCost+d.manFbCost)+'</td><td>'+pct(d.manApiCost+d.manCbCost+d.manFbCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Manual / research usage</td><td>'+fINR(d.manApiCost)+'</td><td>'+pct(d.manApiCost,d.grand)+'%</td></tr>'+
     '<tr><td>Packaging (Rx fulfilment)</td><td>'+fINR(d.pkgCost-d.pkgWasteCost)+'</td><td>'+pct(d.pkgCost-d.pkgWasteCost,d.grand)+'%</td></tr>'+
     '<tr><td>Packaging waste (manual)</td><td>'+fINR(d.pkgWasteCost)+'</td><td>'+pct(d.pkgWasteCost,d.grand)+'%</td></tr>'+
     '<tr class="rtot"><td>Total COGS</td><td>'+fINR(d.grand)+'</td><td>100%</td></tr></tbody>';
 
-  // manual detail tables
-  var hasManual=d.fManApi.length||d.fManCb.length||d.fManFb.length||d.fManPkg.length;
+  var hasManual=d.fManApi.length||d.fManPkg.length;
   if(hasManual){
     show('rc-man');
     var manHtml='';
     if(d.fManApi.length){
       var arows=d.fManApi.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">'+esc(e.ingCode||'\u2014')+'</span></td><td>'+esc(e.ingName||'')+'</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
-      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">APIs / Excipients / Bases</p>'+
-        '<table><thead><tr><th>Date</th><th>Code</th><th>Ingredient</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+arows+
+      manHtml+='<table><thead><tr><th>Date</th><th>Code</th><th>Ingredient</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+arows+
         '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manApiCost)+'</td><td></td></tr></tbody></table>';
-    }
-    if(d.fManCb.length){
-      var cbrows=d.fManCb.map(function(e){var c=cpg(apis.find(function(a){return a.code==='CB'}))*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">CB</span></td><td>Cream Base</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
-      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Cream Base waste</p>'+
-        '<table><thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+cbrows+
-        '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manCbCost)+'</td><td></td></tr></tbody></table>';
-    }
-    if(d.fManFb.length){
-      var fbrows=d.fManFb.map(function(e){var c=cpg(apis.find(function(a){return a.code==='FB'}))*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">FB</span></td><td>Foam Base</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
-      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Foam Base waste</p>'+
-        '<table><thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+fbrows+
-        '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manFbCost)+'</td><td></td></tr></tbody></table>';
     }
     if(d.fManPkg.length){
       var pkrows=d.fManPkg.map(function(e){var pi=pkg.find(function(p){return p.name===e.pkgName});var c=(pi?pi.price:0)*(e.qty||0);return'<tr><td>'+esc(e.date||'')+'</td><td>'+esc(e.pkgName||'\u2014')+'</td><td>'+(e.qty||0)+'</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
