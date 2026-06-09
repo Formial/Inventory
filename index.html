@@ -148,23 +148,98 @@ textarea:focus{border-color:var(--navy)}
 
 <!-- MANUAL USAGE -->
 <div id="page-manual" class="page">
-  <div class="card">
-    <div class="ct">Manual ingredient usage</div>
-    <div class="info">Extra consumption not captured by prescriptions — research batches, failed batches, stability tests, samples. Select ingredient, enter grams and a reason. Cost is shown only in the Report.</div>
-    <div class="tw">
-      <table>
-        <thead><tr>
-          <th style="width:28px">#</th>
-          <th style="width:26%">Ingredient</th>
-          <th style="width:78px">Grams (g)</th>
-          <th style="width:115px">Date</th>
-          <th>Reason / note</th>
-          <th style="width:28px"></th>
-        </tr></thead>
-        <tbody id="man-tbody"></tbody>
-      </table>
+  <!-- tab strip -->
+  <div style="display:flex;gap:4px;margin-bottom:14px">
+    <button class="nb active" style="background:#fff;color:var(--navy);font-weight:700;border:1px solid var(--border)" onclick="showManTab('api',this)">APIs / Excipients / Bases</button>
+    <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('cb',this)">Cream Base waste</button>
+    <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('fb',this)">Foam Base waste</button>
+    <button class="nb" style="border:1px solid var(--border)" onclick="showManTab('pkg',this)">Packaging waste</button>
+  </div>
+
+  <!-- API entries -->
+  <div id="man-tab-api" class="man-tab">
+    <div class="card">
+      <div class="ct">APIs, Excipients &amp; Base usage</div>
+      <div class="info">Research batches, failed batches, stability tests, samples — any ingredient used outside normal Rx. Select ingredient, enter grams and a reason. Cost shown only in Report.</div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th style="width:26%">Ingredient</th>
+            <th style="width:78px">Grams (g)</th>
+            <th style="width:115px">Date</th>
+            <th>Reason / note</th>
+            <th style="width:28px"></th>
+          </tr></thead>
+          <tbody id="man-api-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('api')">+ Add entry</button></div>
     </div>
-    <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManualRow()">+ Add entry</button></div>
+  </div>
+
+  <!-- CB waste -->
+  <div id="man-tab-cb" class="man-tab" style="display:none">
+    <div class="card">
+      <div class="ct">Cream Base waste / extra production</div>
+      <div class="info">Cream base batches that were discarded, failed QC, or used for testing. Enter grams wasted — deducted from CB stock and costed at CB &#8377;/g in the Report.</div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th style="width:110px">Grams wasted (g)</th>
+            <th style="width:115px">Date</th>
+            <th>Reason / note</th>
+            <th style="width:28px"></th>
+          </tr></thead>
+          <tbody id="man-cb-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('cb')">+ Add entry</button></div>
+    </div>
+  </div>
+
+  <!-- FB waste -->
+  <div id="man-tab-fb" class="man-tab" style="display:none">
+    <div class="card">
+      <div class="ct">Foam Base waste / extra production</div>
+      <div class="info">Foam base batches discarded or used for testing. Enter grams wasted — costed at FB &#8377;/g in the Report.</div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th style="width:110px">Grams wasted (g)</th>
+            <th style="width:115px">Date</th>
+            <th>Reason / note</th>
+            <th style="width:28px"></th>
+          </tr></thead>
+          <tbody id="man-fb-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('fb')">+ Add entry</button></div>
+    </div>
+  </div>
+
+  <!-- Packaging waste -->
+  <div id="man-tab-pkg" class="man-tab" style="display:none">
+    <div class="card">
+      <div class="ct">Packaging waste / extra used</div>
+      <div class="info">Damaged, misprinted, or extra packaging items used outside normal Rx fulfilment. Select item, enter quantity wasted and a reason. Costed at that item's unit price in the Report.</div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th style="width:26%">Packaging item</th>
+            <th style="width:78px">Qty (units)</th>
+            <th style="width:115px">Date</th>
+            <th>Reason / note</th>
+            <th style="width:28px"></th>
+          </tr></thead>
+          <tbody id="man-pkg-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:11px"><button class="btn btn-sm btn-p" onclick="addManRow('pkg')">+ Add entry</button></div>
+    </div>
   </div>
 </div>
 
@@ -242,13 +317,13 @@ textarea:focus{border-color:var(--navy)}
       <div class="ct" style="margin:0">Packaging stock</div>
       <button class="btn btn-sm" onclick="addPkgRow()">+ Add item</button>
     </div>
-    <div class="info">Auto-used = prescription count from all saved daily entries. Adjustment = extra wastage (+) or returns (&#8722;). Remaining = Stock &#8722; Auto &#8722; Adj.</div>
+    <div class="info">Auto-used = prescription count from all saved daily entries. Any extra wastage is logged in Manual Usage → Packaging waste. Remaining = Stock − Auto-used − Manual waste.</div>
     <div class="tw">
       <table>
         <thead><tr>
           <th style="width:20%">Item</th><th style="width:62px">Stock</th>
           <th style="width:78px">Price/unit (&#8377;)</th><th style="width:52px">Kit</th>
-          <th style="width:68px">Auto-used</th><th style="width:72px">Adjustment</th>
+          <th style="width:68px">Auto-used</th>
           <th style="width:90px">Remaining</th><th style="width:108px">Last restock</th><th style="width:28px"></th>
         </tr></thead>
         <tbody id="pkg-tbody"></tbody>
@@ -271,6 +346,12 @@ textarea:focus{border-color:var(--navy)}
     <div class="pdfs">
       <button class="pbtn pbtn-p" onclick="dlSummary()">&#8659; Summary PDF</button>
       <button class="pbtn" onclick="dlDetail()">&#8659; Detailed PDF</button>
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Close month</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">Subtracts all Rx + manual usage from stock for the selected date range. Run once at month end after the report looks correct. Clears daily entries and manual usage for the period. <strong style="color:var(--navy)">Cannot be undone.</strong></div>
+      <button class="pbtn" style="border-color:#c0392b;color:#c0392b" onclick="closeMonth()">&#10003; Close month &amp; update stock</button>
+      <span id="close-msg" style="font-size:11px;font-weight:600;color:var(--navy);margin-left:12px"></span>
     </div>
   </div>
   <div class="rbar" id="rbar"></div>
@@ -366,15 +447,21 @@ var DP=[
 ];
 
 var apis=lv('apis',DA),cream=lv('cream',DC),foam=lv('foam',DF),pkg=lv('pkg',DP);
-var dailyLog=lv('dlog',{}),manualUsage=lv('muse',[]);
+var dailyLog=lv('dlog',{});
+// manual usage split by type
+var manApi=lv('mapi',[]);   // [{ingCode,ingName,grams,date,reason}]
+var manCb =lv('mcb', []);   // [{grams,date,reason}]
+var manFb =lv('mfb', []);   // [{grams,date,reason}]
+var manPkg=lv('mpkg',[]);   // [{pkgName,qty,date,reason}]
 
 // nav
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
-  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('nav .nb').forEach(function(b){b.classList.remove('active')});
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
   if(id==='stock')renderPkg();
+  if(id==='manual')renderManual();
 }
 
 // helpers
@@ -439,16 +526,41 @@ function calcAll(from,to){
   var resolved=resD(allDed);
   var ingCost=0,usageMap={};
   resolved.forEach(function(r){var c=r.ing?cpg(r.ing)*r.grams:0;ingCost+=c;var code=r.ing?r.ing.code:r.key;if(!usageMap[code])usageMap[code]={grams:0,cost:0,ing:r.ing};usageMap[code].grams+=r.grams;usageMap[code].cost+=c});
-  // manual usage — filter by date range if provided
-  var filteredManual=manualUsage.filter(function(e){if(from&&e.date&&e.date<from)return false;if(to&&e.date&&e.date>to)return false;return true});
-  var manCost=0,manByCode={};
-  filteredManual.forEach(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);manCost+=c;if(!manByCode[e.ingCode])manByCode[e.ingCode]={grams:0,cost:0,name:e.ingName};manByCode[e.ingCode].grams+=e.grams||0;manByCode[e.ingCode].cost+=c});
+  // manual API usage — filter by date range
+  var fManApi=manApi.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
+  var fManCb =manCb.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
+  var fManFb =manFb.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
+  var fManPkg=manPkg.filter(function(e){return(!from||!e.date||e.date>=from)&&(!to||!e.date||e.date<=to)});
+
+  var manApiCost=0,manApiByCode={};
+  fManApi.forEach(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);manApiCost+=c;if(!manApiByCode[e.ingCode])manApiByCode[e.ingCode]={grams:0,cost:0,name:e.ingName};manApiByCode[e.ingCode].grams+=e.grams||0;manApiByCode[e.ingCode].cost+=c});
+
+  // CB waste cost: grams × CB ₹/g
+  var cbIng=apis.find(function(a){return a.code==='CB'});
+  var manCbCost=fManCb.reduce(function(s,e){return s+cpg(cbIng)*(e.grams||0)},0);
+
+  // FB waste cost: grams × FB ₹/g
+  var fbIng=apis.find(function(a){return a.code==='FB'});
+  var manFbCost=fManFb.reduce(function(s,e){return s+cpg(fbIng)*(e.grams||0)},0);
+
+  var manCost=manApiCost+manCbCost+manFbCost;
   ingCost+=manCost;
+
   var cp=+(lv('cprod',0)),fp=+(lv('fprod',0));
   var cIngU={};cream.forEach(function(a){var u=(a.pct/100)*cp;cIngU[a.code]={grams:u,cost:cpg(a)*u}});
   var fIngU={};foam.forEach(function(a){var u=(a.pct/100)*fp;fIngU[a.code]={grams:u,cost:cpg(a)*u}});
-  var pkgCost=0;pkg.forEach(function(p){var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;pkgCost+=(au+(p.adj||0))*p.price});
-  return{n20:n20,n50:n50,nf:nf,tot:tot,usageMap:usageMap,ingCost:ingCost,cProd:cp,fProd:fp,cIngU:cIngU,fIngU:fIngU,pkgCost:pkgCost,manCost:manCost,manByCode:manByCode,filteredManual:filteredManual,grand:ingCost+pkgCost};
+
+  // packaging cost: auto-used from Rx + manual waste
+  var pkgWasteCost=0;var pkgWasteMap={};
+  fManPkg.forEach(function(e){pkgWasteMap[e.pkgName]=(pkgWasteMap[e.pkgName]||0)+(e.qty||0)});
+  var pkgCost=0;
+  pkg.forEach(function(p){
+    var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;
+    var waste=pkgWasteMap[p.name]||0;
+    pkgCost+=(au+waste)*p.price;
+    pkgWasteCost+=waste*p.price;
+  });
+  return{n20:n20,n50:n50,nf:nf,tot:tot,usageMap:usageMap,ingCost:ingCost,cProd:cp,fProd:fp,cIngU:cIngU,fIngU:fIngU,pkgCost:pkgCost,pkgWasteCost:pkgWasteCost,pkgWasteMap:pkgWasteMap,manCost:manCost,manApiCost:manApiCost,manCbCost:manCbCost,manFbCost:manFbCost,manApiByCode:manApiByCode,fManApi:fManApi,fManCb:fManCb,fManFb:fManFb,fManPkg:fManPkg,grand:ingCost+pkgCost};
 }
 
 // render stock tables
@@ -482,14 +594,18 @@ function renderBase(type){
 function renderPkg(){
   var agg=aggRx();
   var n20=cL(agg.rx20),n50=cL(agg.rx50),nf=cL(agg.rxfoam);
+  // manual pkg waste per item name
+  var pkgWaste={};
+  manPkg.forEach(function(e){pkgWaste[e.pkgName]=(pkgWaste[e.pkgName]||0)+(e.qty||0)});
   document.getElementById('pkg-tbody').innerHTML=pkg.map(function(p,i){
-    var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;var rem=p.stock-au-(p.adj||0);
+    var au=p.kit==='20g'?n20:p.kit==='50g'?n50:nf;
+    var waste=pkgWaste[p.name]||0;
+    var rem=p.stock-au-waste;
     return'<tr><td>'+esc(p.name)+'</td>'+
       '<td><input type="number" value="'+(p.stock||0)+'" min="0" onchange="pkg['+i+'].stock=+this.value;sv(\'pkg\',pkg);renderPkg()"></td>'+
       '<td><input type="number" value="'+(p.price||0)+'" min="0" step="0.5" onchange="pkg['+i+'].price=+this.value;sv(\'pkg\',pkg)"></td>'+
       '<td><span class="badge '+(p.kit==='20g'?'b-n':p.kit==='50g'?'b-a':'b-t')+'">'+p.kit+'</span></td>'+
-      '<td style="text-align:center;color:var(--muted)">'+au+'</td>'+
-      '<td><input type="number" value="'+(p.adj||0)+'" onchange="pkg['+i+'].adj=+this.value;sv(\'pkg\',pkg);renderPkg()"></td>'+
+      '<td style="text-align:center;color:var(--muted)">'+au+(waste>0?' <span style="color:var(--red-text);font-size:10px">+'+waste+' waste</span>':'')+'</td>'+
       '<td style="font-weight:600">'+rem+' '+stag(rem,p.stock)+'</td>'+
       '<td><input type="date" value="'+(p.restock||'')+'" onchange="pkg['+i+'].restock=this.value;sv(\'pkg\',pkg)"></td>'+
       '<td><button class="btn-x" onclick="delR(\'pkg\','+i+')">&#x2715;</button></td></tr>';
@@ -499,7 +615,7 @@ function upP(el,a){var c=el.closest('tr').querySelector('.pgc');if(c)c.textConte
 function delR(type,i){if(type==='apis'){apis.splice(i,1);sv('apis',apis);renderApis()}else if(type==='cream'){cream.splice(i,1);sv('cream',cream);renderBase('cream')}else if(type==='foam'){foam.splice(i,1);sv('foam',foam);renderBase('foam')}else if(type==='pkg'){pkg.splice(i,1);sv('pkg',pkg);renderPkg()}}
 function addApiRow(){apis.push({name:'New ingredient',code:genCode('NI',apis.map(function(a){return a.code})),type:'API',stock:0,bought:0,price:0,restock:''});sv('apis',apis);renderApis()}
 function addBaseRow(t){var arr=t==='cream'?cream:foam;arr.push({name:'New ingredient',code:genCode('NI',arr.map(function(a){return a.code})),stock:0,bought:0,price:0,pct:0,restock:''});sv(t,arr);renderBase(t)}
-function addPkgRow(){pkg.push({name:'New item',stock:0,price:0,kit:'20g',adj:0,restock:''});sv('pkg',pkg);renderPkg()}
+function addPkgRow(){pkg.push({name:'New item',stock:0,price:0,kit:'20g',restock:''});sv('pkg',pkg);renderPkg()}
 
 // daily upload
 ['d20','d50','dfoam'].forEach(function(id){
@@ -548,19 +664,139 @@ function renderDayLog(){
   }).join('');
 }
 
+// manual usage — split tabs
+function showManTab(id,btn){
+  document.querySelectorAll('.man-tab').forEach(function(t){t.style.display='none'});
+  document.getElementById('man-tab-'+id).style.display='block';
+  document.querySelectorAll('#page-manual .nb').forEach(function(b){b.classList.remove('active');b.style.background='transparent';b.style.color='rgba(191,230,255,.75)'});
+  btn.classList.add('active');btn.style.background='#fff';btn.style.color='var(--navy)';
+}
+function buildIngOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+apis.map(function(a){return'<option value="'+esc(a.code)+'"'+(a.code===sel?' selected':'')+'>'+esc(a.name)+' ('+esc(a.code)+')</option>'}).join('')}
+function buildPkgOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+pkg.map(function(p){return'<option value="'+esc(p.name)+'"'+(p.name===sel?' selected':'')+'>'+esc(p.name)+' ('+esc(p.kit)+')</option>'}).join('')}
+
 // manual usage
 function buildIngOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+apis.map(function(a){return'<option value="'+esc(a.code)+'"'+(a.code===sel?' selected':'')+'>'+esc(a.name)+' ('+esc(a.code)+')</option>'}).join('')}
-function addManualRow(){manualUsage.push({ingCode:'',ingName:'',grams:0,date:new Date().toISOString().slice(0,10),reason:''});sv('muse',manualUsage);renderManual()}
-function delManualRow(i){manualUsage.splice(i,1);sv('muse',manualUsage);renderManual()}
-function renderManual(){
-  document.getElementById('man-tbody').innerHTML=manualUsage.map(function(e,i){return(
-    '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
-    '<td><select onchange="manualUsage['+i+'].ingCode=this.value;manualUsage['+i+'].ingName=this.options[this.selectedIndex].text;sv(\'muse\',manualUsage)">'+buildIngOpts(e.ingCode)+'</select></td>'+
-    '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manualUsage['+i+'].grams=+this.value;sv(\'muse\',manualUsage)"></td>'+
-    '<td><input type="date" value="'+(e.date||'')+'" onchange="manualUsage['+i+'].date=this.value;sv(\'muse\',manualUsage)"></td>'+
-    '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="research batch, stability test\u2026" onchange="manualUsage['+i+'].reason=this.value;sv(\'muse\',manualUsage)"></td>'+
-    '<td><button class="btn-x" onclick="delManualRow('+i+')">&#x2715;</button></td></tr>'
-  )}).join('')}
+function buildPkgOpts(sel){return'<option value="">&#8212; select &#8212;</option>'+pkg.map(function(p){return'<option value="'+esc(p.name)+'"'+(p.name===sel?' selected':'')+'>'+esc(p.name)+' ('+esc(p.kit)+')</option>'}).join('')}
+
+function addManRow(type){
+  var today=new Date().toISOString().slice(0,10);
+  if(type==='api'){manApi.push({ingCode:'',ingName:'',grams:0,date:today,reason:''});sv('mapi',manApi);renderManual('api')}
+  else if(type==='cb'){manCb.push({grams:0,date:today,reason:''});sv('mcb',manCb);renderManual('cb')}
+  else if(type==='fb'){manFb.push({grams:0,date:today,reason:''});sv('mfb',manFb);renderManual('fb')}
+  else if(type==='pkg'){manPkg.push({pkgName:'',qty:0,date:today,reason:''});sv('mpkg',manPkg);renderManual('pkg')}
+}
+function delManRow(type,i){
+  if(type==='api'){manApi.splice(i,1);sv('mapi',manApi);renderManual('api')}
+  else if(type==='cb'){manCb.splice(i,1);sv('mcb',manCb);renderManual('cb')}
+  else if(type==='fb'){manFb.splice(i,1);sv('mfb',manFb);renderManual('fb')}
+  else if(type==='pkg'){manPkg.splice(i,1);sv('mpkg',manPkg);renderManual('pkg')}
+}
+function renderManual(type){
+  if(!type||type==='api'){
+    document.getElementById('man-api-tbody').innerHTML=manApi.map(function(e,i){return(
+      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
+      '<td><select onchange="manApi['+i+'].ingCode=this.value;manApi['+i+'].ingName=this.options[this.selectedIndex].text;sv(\'mapi\',manApi)">'+buildIngOpts(e.ingCode)+'</select></td>'+
+      '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manApi['+i+'].grams=+this.value;sv(\'mapi\',manApi)"></td>'+
+      '<td><input type="date" value="'+(e.date||'')+'" onchange="manApi['+i+'].date=this.value;sv(\'mapi\',manApi)"></td>'+
+      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="research, stability test\u2026" onchange="manApi['+i+'].reason=this.value;sv(\'mapi\',manApi)"></td>'+
+      '<td><button class="btn-x" onclick="delManRow(\'api\','+i+')">&#x2715;</button></td></tr>'
+    )}).join('')}
+  if(!type||type==='cb'){
+    document.getElementById('man-cb-tbody').innerHTML=manCb.map(function(e,i){return(
+      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
+      '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manCb['+i+'].grams=+this.value;sv(\'mcb\',manCb)"></td>'+
+      '<td><input type="date" value="'+(e.date||'')+'" onchange="manCb['+i+'].date=this.value;sv(\'mcb\',manCb)"></td>'+
+      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="failed batch, QC reject\u2026" onchange="manCb['+i+'].reason=this.value;sv(\'mcb\',manCb)"></td>'+
+      '<td><button class="btn-x" onclick="delManRow(\'cb\','+i+')">&#x2715;</button></td></tr>'
+    )}).join('')}
+  if(!type||type==='fb'){
+    document.getElementById('man-fb-tbody').innerHTML=manFb.map(function(e,i){return(
+      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
+      '<td><input type="number" value="'+(e.grams||0)+'" min="0" step="0.01" onchange="manFb['+i+'].grams=+this.value;sv(\'mfb\',manFb)"></td>'+
+      '<td><input type="date" value="'+(e.date||'')+'" onchange="manFb['+i+'].date=this.value;sv(\'mfb\',manFb)"></td>'+
+      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="failed batch, QC reject\u2026" onchange="manFb['+i+'].reason=this.value;sv(\'mfb\',manFb)"></td>'+
+      '<td><button class="btn-x" onclick="delManRow(\'fb\','+i+')">&#x2715;</button></td></tr>'
+    )}).join('')}
+  if(!type||type==='pkg'){
+    document.getElementById('man-pkg-tbody').innerHTML=manPkg.map(function(e,i){return(
+      '<tr><td style="color:var(--muted);font-size:11px">'+(i+1)+'</td>'+
+      '<td><select onchange="manPkg['+i+'].pkgName=this.value;sv(\'mpkg\',manPkg)">'+buildPkgOpts(e.pkgName)+'</select></td>'+
+      '<td><input type="number" value="'+(e.qty||0)+'" min="0" onchange="manPkg['+i+'].qty=+this.value;sv(\'mpkg\',manPkg)"></td>'+
+      '<td><input type="date" value="'+(e.date||'')+'" onchange="manPkg['+i+'].date=this.value;sv(\'mpkg\',manPkg)"></td>'+
+      '<td><input type="text" value="'+esc(e.reason||'')+'" placeholder="damaged, misprinted\u2026" onchange="manPkg['+i+'].reason=this.value;sv(\'mpkg\',manPkg)"></td>'+
+      '<td><button class="btn-x" onclick="delManRow(\'pkg\','+i+')">&#x2715;</button></td></tr>'
+    )}).join('')}
+}
+
+// close month — deduct all usage from stock, clear period data
+function closeMonth(){
+  var from=document.getElementById('date-from').value;
+  var to=document.getElementById('date-to').value;
+  if(!from||!to){alert('Set the From and To dates first, then refresh the report before closing.');return}
+  if(!confirm('Close month '+from+' → '+to+'?\n\nThis will:\n• Subtract all Rx ingredient usage from stock\n• Subtract all manual API/CB/FB/packaging entries from stock\n• Clear daily entries and manual usage for this period\n\nCannot be undone. Make sure you have downloaded your PDFs first.')) return;
+
+  var d=calcAll(from,to);
+
+  // 1. Deduct API/EXC/BASE usage from Rx
+  Object.keys(d.usageMap).forEach(function(code){
+    var a=apis.find(function(x){return x.code===code});
+    if(a){a.stock=Math.round((+(a.stock||0)-(+d.usageMap[code].grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
+  });
+
+  // 2. Deduct CB/FB individual ingredients from cream/foam base production
+  Object.keys(d.cIngU).forEach(function(code){
+    var a=cream.find(function(x){return x.code===code});
+    if(a){a.stock=Math.round((+(a.stock||0)-(+d.cIngU[code].grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
+  });
+  Object.keys(d.fIngU).forEach(function(code){
+    var a=foam.find(function(x){return x.code===code});
+    if(a){a.stock=Math.round((+(a.stock||0)-(+d.fIngU[code].grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
+  });
+
+  // 3. Deduct manual API entries
+  d.fManApi.forEach(function(e){
+    var a=apis.find(function(x){return x.code===e.ingCode});
+    if(a){a.stock=Math.round((+(a.stock||0)-(+e.grams||0))*1000)/1000;if(a.stock<0)a.stock=0}
+  });
+
+  // 4. Deduct CB/FB waste
+  var cbIng=apis.find(function(x){return x.code==='CB'});
+  if(cbIng){var cbWaste=d.fManCb.reduce(function(s,e){return s+(+e.grams||0)},0);cbIng.stock=Math.round((+(cbIng.stock||0)-cbWaste)*1000)/1000;if(cbIng.stock<0)cbIng.stock=0}
+  var fbIng=apis.find(function(x){return x.code==='FB'});
+  if(fbIng){var fbWaste=d.fManFb.reduce(function(s,e){return s+(+e.grams||0)},0);fbIng.stock=Math.round((+(fbIng.stock||0)-fbWaste)*1000)/1000;if(fbIng.stock<0)fbIng.stock=0}
+
+  // 5. Deduct packaging (Rx auto-used + manual waste)
+  pkg.forEach(function(p){
+    var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;
+    var waste=d.pkgWasteMap[p.name]||0;
+    p.stock=Math.max(0,+(p.stock||0)-au-waste);
+  });
+
+  // 6. Save all stock
+  sv('apis',apis);sv('cream',cream);sv('foam',foam);sv('pkg',pkg);
+
+  // 7. Clear daily entries and manual usage for the period
+  Object.keys(dailyLog).forEach(function(dt){if((!from||dt>=from)&&(!to||dt<=to))delete dailyLog[dt]});
+  manApi=manApi.filter(function(e){return e.date&&(e.date<from||e.date>to)});
+  manCb =manCb.filter(function(e){return e.date&&(e.date<from||e.date>to)});
+  manFb =manFb.filter(function(e){return e.date&&(e.date<from||e.date>to)});
+  manPkg=manPkg.filter(function(e){return e.date&&(e.date<from||e.date>to)});
+  sv('dlog',dailyLog);sv('mapi',manApi);sv('mcb',manCb);sv('mfb',manFb);sv('mpkg',manPkg);
+
+  // 8. Reset base production for the period
+  sv('cprod',0);sv('fprod',0);
+  document.getElementById('cream-prod').value='';
+  document.getElementById('foam-prod').value='';
+
+  // 9. Re-render everything
+  renderApis();renderBase('cream');renderBase('foam');renderPkg();
+  renderDayLog();renderManual();
+  generateReport();
+
+  var msg=document.getElementById('close-msg');
+  msg.textContent='Month closed \u2713 — stock updated, period cleared';
+  setTimeout(function(){msg.textContent=''},6000);
+}
 
 // report
 function generateReport(){
@@ -587,15 +823,41 @@ function generateReport(){
   document.getElementById('t-cost').innerHTML=
     '<thead><tr><th>Category</th><th>Amount (&#8377;)</th><th>% of COGS</th></tr></thead><tbody>'+
     '<tr><td>Rx ingredient cost</td><td>'+fINR(d.ingCost-d.manCost)+'</td><td>'+pct(d.ingCost-d.manCost,d.grand)+'%</td></tr>'+
-    '<tr><td>Manual / research usage</td><td>'+fINR(d.manCost)+'</td><td>'+pct(d.manCost,d.grand)+'%</td></tr>'+
-    '<tr><td>Packaging</td><td>'+fINR(d.pkgCost)+'</td><td>'+pct(d.pkgCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Manual / research (APIs &amp; bases)</td><td>'+fINR(d.manApiCost+d.manCbCost+d.manFbCost)+'</td><td>'+pct(d.manApiCost+d.manCbCost+d.manFbCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Packaging (Rx fulfilment)</td><td>'+fINR(d.pkgCost-d.pkgWasteCost)+'</td><td>'+pct(d.pkgCost-d.pkgWasteCost,d.grand)+'%</td></tr>'+
+    '<tr><td>Packaging waste (manual)</td><td>'+fINR(d.pkgWasteCost)+'</td><td>'+pct(d.pkgWasteCost,d.grand)+'%</td></tr>'+
     '<tr class="rtot"><td>Total COGS</td><td>'+fINR(d.grand)+'</td><td>100%</td></tr></tbody>';
 
-  // manual detail — use filteredManual from calcAll (already date-filtered)
-  if(d.filteredManual.length){
+  // manual detail tables
+  var hasManual=d.fManApi.length||d.fManCb.length||d.fManFb.length||d.fManPkg.length;
+  if(hasManual){
     show('rc-man');
-    var mrows=d.filteredManual.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">'+esc(e.ingCode||'\u2014')+'</span></td><td>'+esc(e.ingName||'')+'</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
-    document.getElementById('t-man').innerHTML='<thead><tr><th>Date</th><th>Code</th><th>Ingredient</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+mrows+'<tr class="rtot"><td colspan="4">Total</td><td>'+fINR(d.manCost)+'</td><td></td></tr></tbody>';
+    var manHtml='';
+    if(d.fManApi.length){
+      var arows=d.fManApi.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">'+esc(e.ingCode||'\u2014')+'</span></td><td>'+esc(e.ingName||'')+'</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
+      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">APIs / Excipients / Bases</p>'+
+        '<table><thead><tr><th>Date</th><th>Code</th><th>Ingredient</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+arows+
+        '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manApiCost)+'</td><td></td></tr></tbody></table>';
+    }
+    if(d.fManCb.length){
+      var cbrows=d.fManCb.map(function(e){var c=cpg(apis.find(function(a){return a.code==='CB'}))*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">CB</span></td><td>Cream Base</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
+      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Cream Base waste</p>'+
+        '<table><thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+cbrows+
+        '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manCbCost)+'</td><td></td></tr></tbody></table>';
+    }
+    if(d.fManFb.length){
+      var fbrows=d.fManFb.map(function(e){var c=cpg(apis.find(function(a){return a.code==='FB'}))*(e.grams||0);return'<tr><td>'+esc(e.date||'')+'</td><td><span class="cpill">FB</span></td><td>Foam Base</td><td>'+((e.grams||0).toFixed(3))+'g</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
+      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Foam Base waste</p>'+
+        '<table><thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Grams</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+fbrows+
+        '<tr class="rtot"><td colspan="4">Subtotal</td><td>'+fINR(d.manFbCost)+'</td><td></td></tr></tbody></table>';
+    }
+    if(d.fManPkg.length){
+      var pkrows=d.fManPkg.map(function(e){var pi=pkg.find(function(p){return p.name===e.pkgName});var c=(pi?pi.price:0)*(e.qty||0);return'<tr><td>'+esc(e.date||'')+'</td><td>'+esc(e.pkgName||'\u2014')+'</td><td>'+(e.qty||0)+'</td><td>'+fINR(c)+'</td><td>'+esc(e.reason||'')+'</td></tr>'}).join('');
+      manHtml+='<p style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Packaging waste</p>'+
+        '<table><thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Cost (&#8377;)</th><th>Reason</th></tr></thead><tbody>'+pkrows+
+        '<tr class="rtot"><td colspan="3">Subtotal</td><td>'+fINR(d.pkgWasteCost)+'</td><td></td></tr></tbody></table>';
+    }
+    document.getElementById('t-man').innerHTML=manHtml;
   }else hide('rc-man');
 
   // daily log — show only dates in range
@@ -615,8 +877,16 @@ function generateReport(){
   document.getElementById('t-stock').innerHTML='<thead><tr><th style="width:70px">Code</th><th style="width:65px">Type</th><th>Opening (g)</th><th>Used (g)</th><th>Remaining</th><th>Cost (&#8377;)</th></tr></thead><tbody><tr class="ghdr"><td colspan="6">APIs, Excipients &amp; Bases</td></tr>'+aR+'<tr class="ghdr"><td colspan="6">Cream base ingredients ('+d.cProd+'g produced)</td></tr>'+cR+'<tr class="ghdr"><td colspan="6">Foam base ingredients ('+d.fProd+'g produced)</td></tr>'+fR+'</tbody>';
 
   show('rc-pkg');
-  var pkR=pkg.map(function(p){var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;var used=au+(p.adj||0),rem=p.stock-used;return'<tr><td>'+esc(p.name)+'</td><td><span class="badge '+(p.kit==='20g'?'b-n':p.kit==='50g'?'b-a':'b-t')+'">'+p.kit+'</span></td><td>'+p.stock+'</td><td>'+au+'+'+(p.adj||0)+'</td><td style="font-weight:600">'+rem+' '+stag(rem,p.stock)+'</td><td>'+fINR(used*p.price)+'</td></tr>'}).join('');
-  document.getElementById('t-pkg').innerHTML='<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Used+waste</th><th>Remaining</th><th>Cost (&#8377;)</th></tr></thead><tbody>'+pkR+'</tbody>';
+  var pkR=pkg.map(function(p){
+    var au=p.kit==='20g'?d.n20:p.kit==='50g'?d.n50:d.nf;
+    var waste=d.pkgWasteMap[p.name]||0;
+    var rem=p.stock-au-waste;
+    return'<tr><td>'+esc(p.name)+'</td><td><span class="badge '+(p.kit==='20g'?'b-n':p.kit==='50g'?'b-a':'b-t')+'">'+p.kit+'</span></td>'+
+      '<td>'+p.stock+'</td><td>'+au+'</td><td>'+(waste||'\u2014')+'</td>'+
+      '<td style="font-weight:600">'+rem+' '+stag(rem,p.stock)+'</td>'+
+      '<td>'+fINR((au+waste)*p.price)+'</td></tr>';
+  }).join('');
+  document.getElementById('t-pkg').innerHTML='<thead><tr><th>Item</th><th>Kit</th><th>Opening</th><th>Rx used</th><th>Waste</th><th>Remaining</th><th>Cost (&#8377;)</th></tr></thead><tbody>'+pkR+'</tbody>';
 }
 
 // PDF
