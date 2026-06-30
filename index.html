@@ -815,7 +815,7 @@ function aTbl(doc,y,hds,rows,cw){
   y+=hh;doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);
   rows.forEach(function(row,ri){
     if(y+rh>ph){doc.addPage();y=36}
-    doc.setFillColor(ri%2===0?[232,244,251]:[255,255,255]);doc.rect(m,y,182,rh,'F');
+    if(ri%2===0){doc.setFillColor(232,244,251);}else{doc.setFillColor(255,255,255);}doc.rect(m,y,182,rh,'F');
     doc.setFontSize(8);x=m+2;row.forEach(function(cell,i){doc.text(String(cell||''),x,y+4.8,{maxWidth:cw[i]-3});x+=cw[i]});y+=rh;
   });
   doc.setDrawColor(191,230,255);doc.line(m,y,m+182,y);return y+6;
