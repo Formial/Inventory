@@ -828,7 +828,7 @@ function dlSummary(){
   doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);doc.text('Period: '+drng(),14,y+13);y+=20;
   y=aTbl(doc,y,['Type','Count'],[['20g cream',d.n20],['50g cream',d.n50],['Foam 50ml',d.nf],['Total',d.tot]],[140,42]);
   y=aTbl(doc,y,['Category','Amount (Rs)','%'],[['Rx ingredient cost','Rs '+(d.ingCost-d.manCost).toFixed(2),pct(d.ingCost-d.manCost,d.grand)+'%'],['Manual / research usage','Rs '+d.manCost.toFixed(2),pct(d.manCost,d.grand)+'%'],['Packaging','Rs '+d.pkgCost.toFixed(2),pct(d.pkgCost,d.grand)+'%'],['TOTAL COGS','Rs '+d.grand.toFixed(2),'100%']],[105,50,27]);
-  if(d.filteredManual.length){var mr=d.filteredManual.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return[e.date||'',e.ingCode||'',((e.grams||0).toFixed(2))+'g','Rs '+c.toFixed(2),e.reason||'']});y=aTbl(doc,y,['Date','Code','Grams','Cost','Reason'],mr,[28,22,22,30,80])}
+  if(d.fManApi.length){var mr=d.fManApi.map(function(e){var ing=apis.find(function(a){return a.code===e.ingCode});var c=cpg(ing)*(e.grams||0);return[e.date||'',e.ingCode||'',((e.grams||0).toFixed(2))+'g','Rs '+c.toFixed(2),e.reason||'']});y=aTbl(doc,y,['Date','Code','Grams','Cost','Reason'],mr,[28,22,22,30,80])}
   pF(doc,1);doc.save('Formial_COGS_Summary_'+new Date().toISOString().slice(0,10)+'.pdf');
 }
 function dlDetail(){
@@ -843,7 +843,7 @@ function dlDetail(){
     var drows=dates.map(function(dt){var e=dailyLog[dt];var n20=cL(e.rx20||''),n50=cL(e.rx50||''),nf=cL(e.rxfoam||'');return[dt,String(n20),String(n50),String(nf),String(n20+n50+nf)]});
     var t20=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx20||'')},0),t50=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rx50||'')},0),tf=dates.reduce(function(s,dt){return s+cL(dailyLog[dt].rxfoam||'')},0);
     drows.push(['TOTAL ('+dates.length+' days)',String(t20),String(t50),String(tf),String(t20+t50+tf)]);
-    y=aTbl(doc,y,['Date','20g','50g','Foam','Total'],[50,30,30,30,42],drows);
+    y=aTbl(doc,y,['Date','20g','50g','Foam','Total'],drows,[50,30,30,30,42]);
     if(y>220){doc.addPage();pg++;pF(doc,pg);y=36}
   }
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(5,70,96);doc.text('APIs, Excipients & Bases',14,y);y+=4;
