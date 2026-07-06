@@ -466,7 +466,10 @@ function cDed(al,bs){
   var up=al.reduce(function(s,i){return s+i.pct},0)+EXC_PCT*2+(az?EXC_PCT:0)+(ntg*0.5/bs*100);
   add('creambase',(Math.max(0,100-up)/100)*bs);return d;
 }
-function fDed(al){var bs=50,d={},up=0;al.forEach(function(api){d[norm(api.name)]=(d[norm(api.name)]||0)+(api.pct/100)*bs;up+=api.pct});d['foambase']=(d['foambase']||0)+(Math.max(0,100-up)/100)*bs;return d}
+var POLY_PCT=4;
+function fDed(al){var bs=50,d={},up=0;al.forEach(function(api){d[norm(api.name)]=(d[norm(api.name)]||0)+(api.pct/100)*bs;up+=api.pct});
+  d['polysorbate']=(d['polysorbate']||0)+(POLY_PCT/100)*bs;up+=POLY_PCT;
+  d['foambase']=(d['foambase']||0)+(Math.max(0,100-up)/100)*bs;return d}
 function mDed(maps){var m={};maps.forEach(function(x){Object.keys(x).forEach(function(k){m[k]=(m[k]||0)+x[k]})});return m}
 var SM={'tretinoin':function(){return apis.find(function(a){return norm(a.name).includes('tretinoin')&&a.type==='API'})},
  'transcutolp':function(){return apis.find(function(a){return norm(a.name).includes('transcutol')})},
@@ -475,7 +478,8 @@ var SM={'tretinoin':function(){return apis.find(function(a){return norm(a.name).
  'edta':function(){return apis.find(function(a){return norm(a.name).includes('edta')})},
  'propylenegly':function(){return apis.find(function(a){return norm(a.name).includes('propylene')})},
  'creambase':function(){return apis.find(function(a){return a.code==='CB'})},
- 'foambase':function(){return apis.find(function(a){return a.code==='FB'})}};
+ 'foambase':function(){return apis.find(function(a){return a.code==='FB'})},
+ 'polysorbate':function(){return apis.find(function(a){return norm(a.name).includes('polysorbate')})}};
 function resD(ded){return Object.keys(ded).map(function(k){var g=ded[k],ing=null;if(SM[k])ing=SM[k]();else ing=apis.find(function(a){var n=norm(a.name);return n===k||k.indexOf(n)>=0||n.indexOf(k)>=0});return{key:k,grams:g,ing:ing}})}
 function parseRx(txt,sz){if(!txt.trim())return[];return txt.trim().split('\n').filter(Boolean).map(function(line){var al=line.split('+').map(function(s){s=s.trim();var m=s.match(/^(.+?)\s+([\d.]+)%/);return m?{name:m[1].trim(),pct:parseFloat(m[2])}:null}).filter(Boolean);return{raw:line.trim(),apiList:al,size:sz}})}
 
